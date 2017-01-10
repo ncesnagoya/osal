@@ -2354,11 +2354,8 @@ int32 OS_Milli2Ticks (uint32 milli_seconds)
 
 int32 OS_Tick2Micros (void)
 {
-    /* 
-    ** sysconf(_SC_CLK_TCK) returns ticks/second.
-    */
-    return(1000000/sysconf(_SC_CLK_TCK));
-	    
+  return ( (int32)1000 );
+
 }/* end OS_InfoGetTicks */
 
 /*---------------------------------------------------------------------------------------
@@ -2369,22 +2366,22 @@ int32 OS_Tick2Micros (void)
 
 int32 OS_GetLocalTime(OS_time_t *time_struct)
 {
-   int               status;
-   struct  timespec  time;
+   ER ercd;
+   SYSTIM time;
 
    if (time_struct == NULL)
    {
       return OS_INVALID_POINTER;
    }
    
-   status = clock_gettime(CLOCK_REALTIME, &time);
-   if (status != 0)
+   ercd = get_tim(&time);
+   if (ercd == E_OK)
    {
         return OS_ERROR;
    }
 
-   time_struct -> seconds = time.tv_sec;
-   time_struct -> microsecs = time.tv_nsec / 1000;
+   time_struct -> seconds = OS_systim_offset / 1000000 + time / 1000;
+   time_struct -> microsecs = (OS_systim_offset % 1000000) + ( time % 1000 ) * 1000;
 
    return OS_SUCCESS;
 
@@ -2398,22 +2395,8 @@ int32 OS_GetLocalTime(OS_time_t *time_struct)
 
 int32 OS_SetLocalTime(OS_time_t *time_struct)
 {
-   int               status;
-   struct  timespec  time;
-
-   if (time_struct == NULL)
-   {
-      return OS_INVALID_POINTER;
-   }
    
-   time.tv_sec = time_struct -> seconds;
-   time.tv_nsec = (time_struct -> microsecs) * 1000;
-
-   status = clock_settime(CLOCK_REALTIME, &time);
-   if (status != 0)
-   {
-        return OS_ERROR;
-   }
+   OS_systim_offset  = time_struct -> seconds * 1000000 + time_struct -> microsecs;
 
    return OS_SUCCESS;
 
