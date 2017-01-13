@@ -17,8 +17,9 @@
 ## OS = posix
 ## OS = rtems
 ## OS = vxworks6 
+## OS = toppers
 ##---------------------------------------------------------
-OS = posix
+OS = toppers
 
 ##---------------------------------------------------------
 ## BSP -- BSP/Operating system for the board
@@ -30,5 +31,6 @@ OS = posix
 ## BSP = genppc-vxworks6.4   -- vxWorks Power PC target
 ## BSP = mcf5235-rtems       -- RTEMS Coldfire evaluation board
 ## BSP = sis-rtems           -- RTEMS Sparc Instruction Simulator (GDB)
+## BSP = soisoc-toppers      -- TOPPERS SoI-SOC
 ##---------------------------------------------------------
-BSP = pc-linux-ut
+BSP = soisoc-toppers
