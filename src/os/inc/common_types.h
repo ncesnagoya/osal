@@ -281,6 +281,26 @@
    typedef unsigned long int                     cpusize;
    typedef long int                              cpudiff;
 
+#elif defined(__SH__) || defined (_sh_)
+   /* ----------------------- SH processor family ---------------------------*/
+   /* SPARC Big endian */
+   #define _STRUCT_HIGH_BIT_FIRST_
+   #undef  _STRUCT_LOW_BIT_FIRST_
+
+   typedef unsigned char                        osalbool;
+   typedef signed char                          int8;
+   typedef short int                            int16;
+   typedef long int                             int32;
+   _EXTENSION_ typedef long long int            int64;
+   typedef unsigned char                        uint8;
+   typedef unsigned short int                   uint16;
+   typedef unsigned long int                    uint32;
+   _EXTENSION_ typedef unsigned long long int   uint64;
+
+   typedef unsigned long int                     cpuaddr;
+   typedef unsigned long int                     cpusize;
+   typedef long int                              cpudiff;
+
 #else  /* not any of the above */
    #error undefined processor
 #endif  /* processor types */

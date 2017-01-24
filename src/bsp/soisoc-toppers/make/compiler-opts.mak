@@ -25,7 +25,7 @@ SYSINCS = $(HRP2INCDIR:%=-I%)
 ## Target Defines for the OS, Hardware Arch, etc..
 ##
 ##TARGET_DEFS = -D_RTEMS_OS_ -D_m68k_ -D$(OS) -DM5235BCC -D_EMBED_
-TARGET_DEFS = -D$(OS) -D_EMBED_
+TARGET_DEFS = -D$(OS) -D_EMBED_ -D__SH__
 
 ## 
 ## Endian Defines
