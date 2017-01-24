@@ -306,119 +306,98 @@ KERNEL_DOMAIN {
 
 ---------------------------------------------------------------------------------------*/
 
-int32 OS_TaskCreate (uint32 *task_id, const char *task_name, osal_task_entry function_pointer,
-                      const uint32 *stack_pointer, uint32 stack_size, uint32 priority, 
-                      uint32 flags)
-{
+   int32 OS_TaskCreate (uint32 *task_id, const char *task_name, osal_task_entry function_pointer,
+    const uint32 *stack_pointer, uint32 stack_size, uint32 priority, 
+    uint32 flags)
+   {
     uint32             possible_taskid;
     uint32             i;
-    rtems_status_code  status;
-    rtems_name         r_name;
-    rtems_mode         r_mode;
-    rtems_attribute    r_attributes;
+    ER                 status;
+    T_CTSK             ctsk;
 
 
     /* Check for NULL pointers */
     if( (task_name == NULL) || (function_pointer == NULL) || (task_id == NULL) )
     {
-        return OS_INVALID_POINTER;
+      return OS_INVALID_POINTER;
     }
     
     /* we don't want to allow names too long*/
     /* if truncated, two names might be the same */
     if (strlen(task_name) >= OS_MAX_API_NAME)
     {
-        return OS_ERR_NAME_TOO_LONG;
+      return OS_ERR_NAME_TOO_LONG;
     }
 
     /* Check for bad priority */
     if (priority > MAX_PRIORITY)
     {
-        return OS_ERR_INVALID_PRIORITY;
+      return OS_ERR_INVALID_PRIORITY;
     }
     
     /* Check Parameters */
-    status = rtems_semaphore_obtain (OS_task_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_task_table_sem);
 
     for(possible_taskid = 0; possible_taskid < OS_MAX_TASKS; possible_taskid++)
     {
-        if (OS_task_table[possible_taskid].free == TRUE)
-        {
-            break;
-        }
+      if (OS_task_table[possible_taskid].free == TRUE)
+      {
+        break;
+      }
     }
 
     /* Check to see if the id is out of bounds */
     if( possible_taskid >= OS_MAX_TASKS || OS_task_table[possible_taskid].free != TRUE)
     {    
-        status = rtems_semaphore_release (OS_task_table_sem);
-        return OS_ERR_NO_FREE_IDS;
+      unl_mtx(OS_task_table_sem);
+      return OS_ERR_NO_FREE_IDS;
     }
 
     /* Check to see if the name is already taken */
     for (i = 0; i < OS_MAX_TASKS; i++)
     {
-        if ((OS_task_table[i].free == FALSE) &&
-           ( strcmp((char*)task_name, OS_task_table[i].name) == 0)) 
-        {        
-            status = rtems_semaphore_release (OS_task_table_sem);
-            return OS_ERR_NAME_TAKEN;
-        }
+      if ((OS_task_table[i].free == FALSE) &&
+       ( strcmp((char*)task_name, OS_task_table[i].name) == 0)) 
+      {        
+        unl_mtx(OS_task_table_sem);
+        return OS_ERR_NAME_TAKEN;
+      }
     }
     /* Set the possible task Id to not free so that
      * no other task can try to use it */
 
     OS_task_table[possible_taskid].free  = FALSE;
-    status = rtems_semaphore_release (OS_task_table_sem);
+    unl_mtx(OS_task_table_sem);
 
-    /*
-    ** RTEMS task names are only 4 characters. 
-    ** Use the passed in name so at least you can try to determine the name
-    */    
-    r_name = rtems_build_name(task_name[0],task_name[1],task_name[2],task_name[3]);
-    r_mode = RTEMS_PREEMPT | RTEMS_NO_ASR | RTEMS_NO_TIMESLICE | RTEMS_INTERRUPT_LEVEL(0);
+    ctsk.tskatr = TA_DOM(TDOM_KERNEL);
+    ctsk.task = (TASK)(function_pointer);
+    ctsk.itskpri = priority;
+    ctsk.stksz = stack_size;
+    ctsk.stk = (STK_T *)(stack_pointer);
+    ctsk.sstksz = stack_size;
+    ctsk.sstk = NULL;
 
-    /* 
-    ** see if the user wants floating point enabled. If 
-    ** so, then se the correct option.
-    */
-    if (flags == OS_FP_ENABLED)
-    {
-        r_attributes = RTEMS_FLOATING_POINT | RTEMS_LOCAL;
-    }
-    else
-    {
-        r_attributes = RTEMS_LOCAL;
-    }
-	
-    status = rtems_task_create(
-                 r_name,
-		 priority,
-		 stack_size,
-		 r_mode,
-		 r_attributes,
-		 &OS_task_table[possible_taskid].id); 
+    status = acre_tsk(&ctsk);
     
     /* check if task_create failed */
-    if (status != RTEMS_SUCCESSFUL )
+    if (status != E_OK )
     {       
-        status = rtems_semaphore_obtain (OS_task_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-        OS_task_table[possible_taskid].free  = TRUE;
-        status = rtems_semaphore_release (OS_task_table_sem);
-	return OS_ERROR;
+      loc_mtx(OS_task_table_sem);
+      OS_task_table[possible_taskid].free  = TRUE;
+      unl_mtx(OS_task_table_sem);
+      return OS_ERROR;
     } 
+    OS_task_table[possible_taskid].id = status;
 
     /* will place the task in 'ready for scheduling' state */
-    status = rtems_task_start (OS_task_table[possible_taskid].id, /*rtems task id*/
-			     (rtems_task_entry) function_pointer, /*task entry point */
-				 0 );                             /* passed argument  */
-	
-    if (status != RTEMS_SUCCESSFUL )
+    status = act_tsk(OS_task_table[possible_taskid].id);
+
+    if (status != E_OK )
     {		
-        status = rtems_semaphore_obtain (OS_task_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-        OS_task_table[possible_taskid].free  = TRUE;
-        status = rtems_semaphore_release (OS_task_table_sem);
-	return OS_ERROR;		
+      loc_mtx(OS_task_table_sem);
+      OS_task_table[possible_taskid].free  = TRUE;
+      unl_mtx(OS_task_table_sem);
+      return OS_ERROR;		
     }
     
     /* Set the task_id to the id that was found available 
@@ -426,12 +405,13 @@ int32 OS_TaskCreate (uint32 *task_id, const char *task_name, osal_task_entry fun
     *task_id = possible_taskid;
 
     /* this Id no longer free */
-    status = rtems_semaphore_obtain (OS_task_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_task_table_sem);
     strcpy(OS_task_table[*task_id].name, (char*) task_name);
     OS_task_table[*task_id].creator = OS_FindCreator();
     OS_task_table[*task_id].stack_size = stack_size;
     OS_task_table[*task_id].priority = priority;
-    status = rtems_semaphore_release (OS_task_table_sem);
+    unl_mtx(OS_task_table_sem);
+
     return OS_SUCCESS;
     
 } /* end OS_TaskCreate */

@@ -183,7 +183,7 @@ void OS_ApplicationShutdown         (uint8 flag);
 
 int32 OS_TaskCreate            (uint32 *task_id, const char *task_name, 
                                 osal_task_entry function_pointer,
-                                uint32 *stack_pointer,
+                                const uint32 *stack_pointer,
                                 uint32 stack_size,
                                 uint32 priority, uint32 flags);
 
