@@ -480,11 +480,10 @@ int32 OS_TaskDelete (uint32 task_id)
 void OS_TaskExit()
 {
     uint32            task_id;
-    rtems_status_code status;
 
     task_id = OS_TaskGetId();
 
-    status = rtems_semaphore_obtain (OS_task_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_task_table_sem);
     
     OS_task_table[task_id].free = TRUE;
     OS_task_table[task_id].id = UNINITIALIZED;
@@ -493,9 +492,10 @@ void OS_TaskExit()
     OS_task_table[task_id].stack_size = UNINITIALIZED;
     OS_task_table[task_id].priority = UNINITIALIZED;
     OS_task_table[task_id].delete_hook_pointer = NULL;            
-    status = rtems_semaphore_release (OS_task_table_sem); 
+    unl_mtx(OS_task_table_sem);
 
-    rtems_task_delete(RTEMS_SELF);
+    //rtems_task_delete(RTEMS_SELF);
+    del_tsk(task_id);
 
 }/*end OS_TaskExit */
 
