@@ -1619,12 +1619,13 @@ int32 OS_QueueGet (uint32 queue_id, void *data, uint32 size, uint32 *size_copied
          *size_copied = 0;
          return OS_ERROR;
       }
-      
-      /*
-      ** If rv == 0, then the select timed out with no data
-      */
-      *size_copied = 0;
-      return(OS_QUEUE_TIMEOUT);
+      else {
+          /*
+          ** If rv == 0, then the select timed out with no data
+          */
+          *size_copied = 0;
+          return(OS_QUEUE_TIMEOUT);
+      }
      
    } /* END timeout */
 

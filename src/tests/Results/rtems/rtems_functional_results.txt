@@ -111,22 +111,22 @@ build/tests/osal-core-test - PASS:407, FAIL:0
 build/tests/queue-timeout-test - PASS:11, FAIL:0
 build/tests/symbol-api-test - did not run, loader not configured
 build/tests/timer-test - PASS:21, FAIL:0
-With the file changes mentioned above the functions tests are expected to produce the 
-following detailed results:
-*** RTEMS Info ***
-SIS-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-rtems-4.10.99.0(SPARC/w/FPU/sis)Stack size=8
-Workspace size=1048576
-*** End RTEMS info ***
-[BEGIN] SIS-RTEMS UNIT TEST
-********If You see this, we got into OS_Application_Startup****
-MutexSem ID = 0
-COMPLETE: 0 test segment(s) executed
-Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
-COPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-Login into RTEMS
+With the file changes mentioned above the functions tests are expected to produce the 
+following detailed results:
+*** RTEMS Info ***
+SIS-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+rtems-4.10.99.0(SPARC/w/FPU/sis)Stack size=8
+Workspace size=1048576
+*** End RTEMS info ***
+[BEGIN] SIS-RTEMS UNIT TEST
+********If You see this, we got into OS_Application_Startup****
+MutexSem ID = 0
+COMPLETE: 0 test segment(s) executed
+Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
+COPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+Login into RTEMS
 /dev/console login: Starting task 1
 Starting task 2
 Starting task 3
@@ -2151,15 +2151,15 @@ TASK 3: Received - 1
 TASK 3: Received - 2
 TASK 3: Received - 2
 TASK 3: Received - 1
-TASK 3: Received - 1
-*** RTEMS Info ***
-PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-rtems-4.10.99.0(SPARC/w/FPU/sis)
- Stack size=8
- Workspace size=1048576
-*** End RTEMS info ***
-[BEGIN] PC-RTEMS UNIT TEST
+TASK 3: Received - 1
+*** RTEMS Info ***
+PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+rtems-4.10.99.0(SPARC/w/FPU/sis)
+ Stack size=8
+ Workspace size=1048576
+*** End RTEMS info ***
+[BEGIN] PC-RTEMS UNIT TEST
 [BEGIN] 01 BinSemFlushTest
 [ PASS] 01.001 bin-sem-flush-test.c:192 - BinSem1 create Id=0 Rc=0
 [ PASS] 01.002 bin-sem-flush-test.c:195 - BinSem1 value=0 Rc=0
@@ -2167,21 +2167,21 @@ rtems-4.10.99.0(SPARC/w/FPU/sis)
 [ PASS] 01.004 bin-sem-flush-test.c:203 - BinSem1 value=0 Rc=0
 [ PASS] 01.005 bin-sem-flush-test.c:209 - Task 1 create Id=0 Rc=0
 [ PASS] 01.006 bin-sem-flush-test.c:212 - Task 2 create Id=1 Rc=0
-[ PASS] 01.007 bin-sem-flush-test.c:215 - Task 3 create Id=2 Rc=0
-Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
-COPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-Login into RTEMS
-/dev/console login: Starting task 1
-TASK 1: Waiting on the semaphore
-Starting task 2
-TASK 2: Waiting on the semaphore
-Starting task 3
-TASK 3: Waiting on the semaphore
+[ PASS] 01.007 bin-sem-flush-test.c:215 - Task 3 create Id=2 Rc=0
+Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
+COPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+Login into RTEMS
+/dev/console login: Starting task 1
+TASK 1: Waiting on the semaphore
+Starting task 2
+TASK 2: Waiting on the semaphore
+Starting task 3
+TASK 3: Waiting on the semaphore
 [ PASS] 01.008 bin-sem-flush-test.c:228 - Task 1 work = 0
 [ PASS] 01.009 bin-sem-flush-test.c:229 - Task 2 work = 0
 [ PASS] 01.010 bin-sem-flush-test.c:230 - Task 3 work = 0
-[ PASS] 01.011 bin-sem-flush-test.c:233 - BinSem1 flush Rc=0
+[ PASS] 01.011 bin-sem-flush-test.c:233 - BinSem1 flush Rc=0
 TASK 1: out of BinSemTake: 0
 TASK 2: out of BinSemTake: 0
 TASK 3: out of BinSemTake: 0
@@ -2301,29 +2301,29 @@ TASK 2:   Doing some work: 37
 TASK 3:   Doing some work: 37
 TASK 1:   Doing some work: 38
 TASK 2:   Doing some work: 38
-TASK 3:   Doing some work: 38
+TASK 3:   Doing some work: 38
 [ PASS] 01.012 bin-sem-flush-test.c:241 - Task 1 work = 40
 [ PASS] 01.013 bin-sem-flush-test.c:242 - Task 2 work = 40
 [ PASS] 01.014 bin-sem-flush-test.c:243 - Task 3 work = 40
 [ PASS] 01.015 bin-sem-flush-test.c:245 - Task 1 failures = 0
 [ PASS] 01.016 bin-sem-flush-test.c:246 - Task 2 failures = 0
-[ PASS] 01.017 bin-sem-flush-test.c:247 - Task 3 failures = 0
-TASK 2:   Doing some work: 39
-TASK 3:   Doing some work: 39
+[ PASS] 01.017 bin-sem-flush-test.c:247 - Task 3 failures = 0
+TASK 2:   Doing some work: 39
+TASK 3:   Doing some work: 39
 [ PASS] 01.018 bin-sem-flush-test.c:259 - Task 1 delete Rc=0
 [ PASS] 01.019 bin-sem-flush-test.c:262 - Task 2 delete Rc=0
 [ PASS] 01.020 bin-sem-flush-test.c:265 - Task 3 delete Rc=0
-[  END] 01 BinSemFlushTest      TOTAL::20    PASS::20    FAIL::0      MIR::0      TSF::0      N/A::0   
-COMPLETE: 1 test segment(s) executed
-*** RTEMS Info ***
-PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-rtems-4.10.99.0(SPARC/w/FPU/sis)
- Stack size=8
- Workspace size=1048576
-*** End RTEMS info ***
-[BEGIN] PC-RTEMS UNIT TEST
-[BEGIN] 01 BinSemTimeoutTest
+[  END] 01 BinSemFlushTest      TOTAL::20    PASS::20    FAIL::0      MIR::0      TSF::0      N/A::0   
+COMPLETE: 1 test segment(s) executed
+*** RTEMS Info ***
+PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+rtems-4.10.99.0(SPARC/w/FPU/sis)
+ Stack size=8
+ Workspace size=1048576
+*** End RTEMS info ***
+[BEGIN] PC-RTEMS UNIT TEST
+[BEGIN] 01 BinSemTimeoutTest
 [ PASS] 01.001 bin-sem-timeout-test.c:202 - BinSem1 create Id=0 Rc=0
 [ PASS] 01.002 bin-sem-timeout-test.c:205 - BinSem1 value=0 Rc=0
 [ PASS] 01.003 bin-sem-timeout-test.c:211 - BinSem1 take Rc=0
@@ -2335,12 +2335,12 @@ rtems-4.10.99.0(SPARC/w/FPU/sis)
 
 [ PASS] 01.008 bin-sem-timeout-test.c:238 - Timer 1 set Rc=0
 
-Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
-COPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-Login into RTEMS
-/dev/console login: Starting task 1
-Delay for 1 second before starting
+Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
+COPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+Login into RTEMS
+/dev/console login: Starting task 1
+Delay for 1 second before starting
 TASK 1: Waiting on the semaphore
 TASK 1:   Doing some work: 0
 TASK 1: Waiting on the semaphore
@@ -2390,16 +2390,16 @@ TASK 1: Waiting on the semaphore
 [ PASS] 01.015 bin-sem-timeout-test.c:171 - Task 1 timeouts=9 <= 20
 [  END] 01 BinSemTimeoutTest    TOTAL::15    PASS::15    FAIL::0      MIR::0      TSF::0      N/A::0   
 
-COMPLETE: 1 test segment(s) executed
-*** RTEMS Info ***
-PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-rtems-4.10.99.0(SPARC/w/FPU/sis)
- Stack size=8
- Workspace size=1048576
-*** End RTEMS info ***
-[BEGIN] PC-RTEMS UNIT TEST
-[BEGIN] 01 BinSemTest
+COMPLETE: 1 test segment(s) executed
+*** RTEMS Info ***
+PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+rtems-4.10.99.0(SPARC/w/FPU/sis)
+ Stack size=8
+ Workspace size=1048576
+*** End RTEMS info ***
+[BEGIN] PC-RTEMS UNIT TEST
+[BEGIN] 01 BinSemTest
 [ PASS] 01.001 bin-sem-test.c:193 - BinSem1 create Id=0 Rc=0
 [ PASS] 01.002 bin-sem-test.c:196 - BinSem1 value=0 Rc=0
 [ PASS] 01.003 bin-sem-test.c:202 - BinSem1 take Rc=0
@@ -2411,12 +2411,12 @@ rtems-4.10.99.0(SPARC/w/FPU/sis)
 
 [ PASS] 01.008 bin-sem-test.c:229 - Timer 1 set Rc=0
 
-Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
-COPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-Login into RTEMS
-/dev/console login: Starting task 1
-Delay for 1 second before starting
+Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
+COPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+Login into RTEMS
+/dev/console login: Starting task 1
+Delay for 1 second before starting
 TASK 1: counter:101 timer_counter:203
 TASK 1: counter:202 timer_counter:304
 TASK 1: counter:303 timer_counter:405
@@ -2430,18 +2430,18 @@ TASK 1: counter:808 timer_counter:910
 [ PASS] 01.010 bin-sem-test.c:160 - Task counter (898) < timer counter (1000)
 [ PASS] 01.011 bin-sem-test.c:161 - Task 1 failures = 0
 [ PASS] 01.012 bin-sem-test.c:162 - Timer failures = 0
-[  END] 01 BinSemTest           TOTAL::12    PASS::12    FAIL::0      MIR::0      TSF::0      N/A::0   
+[  END] 01 BinSemTest           TOTAL::12    PASS::12    FAIL::0      MIR::0      TSF::0      N/A::0   
 COMPLETE: 1 test segment(s) executed
-
-*** RTEMS Info ***
-PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-rtems-4.10.99.0(SPARC/w/FPU/sis)
- Stack size=8
- Workspace size=1048576
-*** End RTEMS info ***
-[BEGIN] PC-RTEMS UNIT TEST
-[BEGIN] 01 CountSemTest
+
+*** RTEMS Info ***
+PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+rtems-4.10.99.0(SPARC/w/FPU/sis)
+ Stack size=8
+ Workspace size=1048576
+*** End RTEMS info ***
+[BEGIN] PC-RTEMS UNIT TEST
+[BEGIN] 01 CountSemTest
 [ PASS] 01.001 count-sem-test.c:161 - CountSem1 create Id=0 Rc=0
 [ PASS] 01.002 count-sem-test.c:169 - CountSem1 take Rc=0
 [ PASS] 01.003 count-sem-test.c:169 - CountSem1 take Rc=0
@@ -2449,13 +2449,13 @@ rtems-4.10.99.0(SPARC/w/FPU/sis)
 [ PASS] 01.005 count-sem-test.c:179 - Task 2 create Id=1 Rc=0
 [ PASS] 01.006 count-sem-test.c:182 - Task 3 create Id=2 Rc=0
 
-Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
-COPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-Login into RTEMS
-/dev/console login: Starting task 1
+Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
+COPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+Login into RTEMS
+/dev/console login: Starting task 1
 Starting task 2
-Starting task 3
+Starting task 3
 TASK 2: Waiting on the semaphore
 TASK 3: Waiting on the semaphore
 TASK 1: Giving the counting semaphore 1
@@ -2506,26 +2506,26 @@ TASK 3: grabbed Counting Sem
 [ PASS] 01.013 count-sem-test.c:214 - Task 2+3 work > 8
 [ PASS] 01.014 count-sem-test.c:217 - Task 1 failures = 0[ PASS] 01.015 count-sem-test.c:218 - Task 2 failures = 0
 [ PASS] 01.016 count-sem-test.c:219 - Task 3 failures = 0
-[  END] 01 CountSemTest         TOTAL::16    PASS::16    FAIL::0      MIR::0      TSF::0      N/A::0   
+[  END] 01 CountSemTest         TOTAL::16    PASS::16    FAIL::0      MIR::0      TSF::0      N/A::0   
 COMPLETE: 1 test segment(s) executed
 
-*** RTEMS Info ***
-PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-rtems-4.10.99.0(SPARC/w/FPU/sis)
- Stack size=8
- Workspace size=1048576
-*** End RTEMS info ***
-[BEGIN] PC-RTEMS UNIT TEST
-[BEGIN] 01 TestMkfsMount
-Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
-COPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-Login into RTEMS
-/dev/console login: [ PASS] 01.001 file-api-test.c:62 - status after mkfs = 0
+*** RTEMS Info ***
+PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+rtems-4.10.99.0(SPARC/w/FPU/sis)
+ Stack size=8
+ Workspace size=1048576
+*** End RTEMS info ***
+[BEGIN] PC-RTEMS UNIT TEST
+[BEGIN] 01 TestMkfsMount
+Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
+COPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+Login into RTEMS
+/dev/console login: [ PASS] 01.001 file-api-test.c:62 - status after mkfs = 0
 [ PASS] 01.002 file-api-test.c:65 - status after mount = 0
-[  END] 01 TestMkfsMount        TOTAL::2     PASS::2     FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 02 TestCreatRemove
+[  END] 01 TestMkfsMount        TOTAL::2     PASS::2     FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 02 TestCreatRemove
 [ PASS] 02.001 file-api-test.c:119 - status after creat = 0
 [ PASS] 02.002 file-api-test.c:123 - status after close = 0
 [ PASS] 02.003 file-api-test.c:127 - status after creat = 0
@@ -2535,8 +2535,8 @@ Login into RTEMS
 [ PASS] 02.007 file-api-test.c:143 - status after remove = -104
 [ PASS] 02.008 file-api-test.c:147 - status after remove = -1
 [ FAIL] 02.009 file-api-test.c:151 - status after remove = -1
-[  END] 02 TestCreatRemove      TOTAL::9     PASS::8     FAIL::1      MIR::0      TSF::0      N/A::0   
-[BEGIN] 03 TestOpenClose
+[  END] 02 TestCreatRemove      TOTAL::9     PASS::8     FAIL::1      MIR::0      TSF::0      N/A::0   
+[BEGIN] 03 TestOpenClose
 [ PASS] 03.001 file-api-test.c:169 - status after creat = 0
 [ PASS] 03.002 file-api-test.c:177 - status after close = 0
 [ PASS] 03.003 file-api-test.c:181 - status after reopen = 0
@@ -2545,8 +2545,8 @@ Login into RTEMS
 [ PASS] 03.006 file-api-test.c:199 - status after close = -16
 [ PASS] 03.007 file-api-test.c:203 - status after open = -1
 [ PASS] 03.008 file-api-test.c:207 - status after remove = 0
-[  END] 03 TestOpenClose        TOTAL::8     PASS::8     FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 04 TestReadWriteLseek
+[  END] 03 TestOpenClose        TOTAL::8     PASS::8     FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 04 TestReadWriteLseek
 [ PASS] 04.001 file-api-test.c:239 - status after creat = 0
 [ PASS] 04.002 file-api-test.c:246 - status after write = 21 size = 21
 [ PASS] 04.003 file-api-test.c:252 - status after lseek = 0
@@ -2568,8 +2568,8 @@ Login into RTEMS
 [ PASS] 04.019 file-api-test.c:324 - status after read = -1
 [ PASS] 04.020 file-api-test.c:328 - status after close = 0
 [ PASS] 04.021 file-api-test.c:332 - status after remove = 0
-[  END] 04 TestReadWriteLseek   TOTAL::21    PASS::21    FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 05 TestMkRmDirFreeBytes
+[  END] 04 TestReadWriteLseek   TOTAL::21    PASS::21    FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 05 TestMkRmDirFreeBytes
 [ PASS] 05.001 file-api-test.c:365 - Checking Free Blocks: 195
 [ PASS] 05.002 file-api-test.c:369 - status after mkdir 1 = 0
 [ PASS] 05.003 file-api-test.c:372 - status after mkdir 2 = 0
@@ -2591,8 +2591,8 @@ Login into RTEMS
 [ PASS] 05.019 file-api-test.c:441 - status after rmdir 1 = 0
 [ PASS] 05.020 file-api-test.c:444 - status after rmdir 2 = 0
 [ PASS] 05.021 file-api-test.c:447 - Checking Free Blocks: 195
-[  END] 05 TestMkRmDirFreeBytes TOTAL::21    PASS::21    FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 06 TestOpenReadCloseDir
+[  END] 05 TestMkRmDirFreeBytes TOTAL::21    PASS::21    FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 06 TestOpenReadCloseDir
 [ PASS] 06.001 file-api-test.c:485 - status after mkdir 1 = 0
 [ PASS] 06.002 file-api-test.c:488 - status after mkdir 2 = 0
 [ PASS] 06.003 file-api-test.c:493 - status after creat 1 = 0
@@ -2620,8 +2620,8 @@ Login into RTEMS
 [ PASS] 06.025 file-api-test.c:635 - status after remove 2 = 0
 [ PASS] 06.026 file-api-test.c:639 - status after rmdir 1 = 0
 [ PASS] 06.027 file-api-test.c:642 - status after rmdir 2 = 0
-[  END] 06 TestOpenReadCloseDir TOTAL::27    PASS::27    FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 07 TestStat
+[  END] 06 TestOpenReadCloseDir TOTAL::27    PASS::27    FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 07 TestStat
 [ PASS] 07.001 file-api-test.c:757 - status after mkdir 1 = 0
 [ PASS] 07.002 file-api-test.c:761 - status after creat 1 = 0
 [ PASS] 07.003 file-api-test.c:769 - status after write 1 = 12 size = 12
@@ -2633,7 +2633,7 @@ Login into RTEMS
 [ PASS] 07.009 file-api-test.c:791 - status after rmdir 1 = 0
 [  END] 07 TestStat             TOTAL::9     PASS::9     FAIL::0      MIR::0      TSF::0      N/A::0   
 
-[BEGIN] 08 TestOpenFileAPI
+[BEGIN] 08 TestOpenFileAPI
 [ PASS] 08.001 file-api-test.c:815 - status after creat 1 = 0
 [ PASS] 08.002 file-api-test.c:819 - status after creat 2 = 1
 [ PASS] 08.003 file-api-test.c:823 - status after creat 3 = 2
@@ -2641,12 +2641,12 @@ Login into RTEMS
 [ PASS] 08.005 file-api-test.c:835 - status after OS_CloseFileByName 1 = 0
 [ PASS] 08.006 file-api-test.c:841 - status after OS_CloseAllFiles = 0
 [ PASS] 08.007 file-api-test.c:847 - status after OS_CloseFileByName 2 = -108
-[  END] 08 TestOpenFileAPI      TOTAL::7     PASS::7     FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 09 TestUnmountRemount
+[  END] 08 TestOpenFileAPI      TOTAL::7     PASS::7     FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 09 TestUnmountRemount
 [ PASS] 09.001 file-api-test.c:81 - status after unmount = 0
 [ PASS] 09.002 file-api-test.c:84 - status after reunmount = 0
-[  END] 09 TestUnmountRemount   TOTAL::2     PASS::2     FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 10 TestRename
+[  END] 09 TestUnmountRemount   TOTAL::2     PASS::2     FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 10 TestRename
 [ PASS] 10.001 file-api-test.c:681 - status after mkdir 1 = 0
 [ PASS] 10.002 file-api-test.c:686 - status after creat 1 = 0
 [ PASS] 10.003 file-api-test.c:694 - status after write 1 = 12 size = 12
@@ -2660,17 +2660,17 @@ Login into RTEMS
 [ PASS] 10.011 file-api-test.c:732 - status after remove 1 = 0
 [ PASS] 10.012 file-api-test.c:735 - status after rmdir 1 = 0
 [  END] 10 TestRename           TOTAL::12    PASS::12    FAIL::0      MIR::0      TSF::0      N/A::0   
-[  END] 10 SUMMARY              TOTAL::118   PASS::117   FAIL::1      MIR::0      TSF::0      N/A::0   
-COMPLETE: 10 test segment(s) executed
-*** RTEMS Info ***
-PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-rtems-4.10.99.0(SPARC/w/FPU/sis)
- Stack size=8
- Workspace size=1048576
-*** End RTEMS info ***
-[BEGIN] PC-RTEMS UNIT TEST
-[BEGIN] 01 MutexTest
+[  END] 10 SUMMARY              TOTAL::118   PASS::117   FAIL::1      MIR::0      TSF::0      N/A::0   
+COMPLETE: 10 test segment(s) executed
+*** RTEMS Info ***
+PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+rtems-4.10.99.0(SPARC/w/FPU/sis)
+ Stack size=8
+ Workspace size=1048576
+*** End RTEMS info ***
+[BEGIN] PC-RTEMS UNIT TEST
+[BEGIN] 01 MutexTest
 [ PASS] 01.001 mutex-test.c:222 - MutSem1 create Id=0 Rc=0
 [ PASS] 01.002 mutex-test.c:228 - OS_MutSemTake 1 Rc=0
 [ PASS] 01.003 mutex-test.c:231 - OS_MutSemTake 2 Rc=0
@@ -2680,13 +2680,13 @@ rtems-4.10.99.0(SPARC/w/FPU/sis)
 [ PASS] 01.007 mutex-test.c:246 - Task 2 create Id=1 Rc=0
 [ PASS] 01.008 mutex-test.c:249 - Task 3 create Id=2 Rc=0
 
-Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
-COPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-Login into RTEMS
-/dev/console login: Starting task 1
+Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
+COPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+Login into RTEMS
+/dev/console login: Starting task 1
 Starting task 2
-Starting task 3
+Starting task 3
 TASK 1 Has the Mutex
 TASK 1   Doing some work: 0
 TASK 1 Released the Mutex
@@ -2994,17 +2994,17 @@ TASK 3 Released the Mutex
 [ PASS] 01.012 mutex-test.c:273 - Task 1 failures = 0
 [ PASS] 01.013 mutex-test.c:274 - Task 2 failures = 0
 [ PASS] 01.014 mutex-test.c:275 - Task 3 failures = 0
-[  END] 01 MutexTest            TOTAL::14    PASS::14    FAIL::0      MIR::0      TSF::0      N/A::0   
-COMPLETE: 1 test segment(s) executed
-*** RTEMS Info ***
-PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-rtems-4.10.99.0(SPARC/w/FPU/sis)
- Stack size=8
- Workspace size=1048576
-*** End RTEMS info ***
-[BEGIN] PC-RTEMS UNIT TEST
-[BEGIN] 01 TASK
+[  END] 01 MutexTest            TOTAL::14    PASS::14    FAIL::0      MIR::0      TSF::0      N/A::0   
+COMPLETE: 1 test segment(s) executed
+*** RTEMS Info ***
+PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+rtems-4.10.99.0(SPARC/w/FPU/sis)
+ Stack size=8
+ Workspace size=1048576
+*** End RTEMS info ***
+[BEGIN] PC-RTEMS UNIT TEST
+[BEGIN] 01 TASK
 [ PASS] 01.001 osal-core-test.c:68 - OS_TaskCreate, nominal
 [ PASS] 01.002 osal-core-test.c:68 - OS_TaskCreate, nominal
 [ PASS] 01.003 osal-core-test.c:68 - OS_TaskCreate, nominal
@@ -3069,12 +3069,12 @@ rtems-4.10.99.0(SPARC/w/FPU/sis)
 [ PASS] 01.062 osal-core-test.c:68 - OS_TaskCreate, nominal
 [ PASS] 01.063 osal-core-test.c:68 - OS_TaskCreate, nominal
 [ PASS] 01.064 osal-core-test.c:68 - OS_TaskCreate, nominal
-[ PASS] 01.065 osal-core-test.c:68 - OS_TaskCreate, nominal
-Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
-COPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-Login into RTEMS
-/dev/console login: [ PASS] 01.066 osal-core-test.c:83 - OS_TaskDelete, nominal
+[ PASS] 01.065 osal-core-test.c:68 - OS_TaskCreate, nominal
+Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
+COPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+Login into RTEMS
+/dev/console login: [ PASS] 01.066 osal-core-test.c:83 - OS_TaskDelete, nominal
 [ PASS] 01.067 osal-core-test.c:83 - OS_TaskDelete, nominal
 [ PASS] 01.068 osal-core-test.c:83 - OS_TaskDelete, nominal
 [ PASS] 01.069 osal-core-test.c:83 - OS_TaskDelete, nominal
@@ -3154,8 +3154,8 @@ Login into RTEMS
 [ PASS] 01.143 osal-core-test.c:145 - OS_TaskDelete, Task 1
 [ PASS] 01.144 osal-core-test.c:146 - OS_TaskDelete, Task 2
 [ PASS] 01.145 osal-core-test.c:147 - OS_TaskDelete, Task 3
-[  END] 01 TASK                 TOTAL::145   PASS::145   FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 02 MSGQ
+[  END] 01 TASK                 TOTAL::145   PASS::145   FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 02 MSGQ
 [ PASS] 02.001 osal-core-test.c:171 - OS_QueueCreate, nominal
 [ PASS] 02.002 osal-core-test.c:171 - OS_QueueCreate, nominal
 [ PASS] 02.003 osal-core-test.c:171 - OS_QueueCreate, nominal
@@ -3298,8 +3298,8 @@ Login into RTEMS
 [ PASS] 02.140 osal-core-test.c:239 - OS_QueueDelete, q 1
 [ PASS] 02.141 osal-core-test.c:243 - OS_QueueDelete, q 2
 [ PASS] 02.142 osal-core-test.c:247 - OS_QueueDelete, q 3
-[  END] 02 MSGQ                 TOTAL::142   PASS::142   FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 03 BSEM
+[  END] 02 MSGQ                 TOTAL::142   PASS::142   FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 03 BSEM
 [ PASS] 03.001 osal-core-test.c:269 - OS_BinSemCreate, nominal
 [ PASS] 03.002 osal-core-test.c:269 - OS_BinSemCreate, nominal
 [ PASS] 03.003 osal-core-test.c:269 - OS_BinSemCreate, nominal
@@ -3354,8 +3354,8 @@ Login into RTEMS
 [ PASS] 03.052 osal-core-test.c:339 - OS_BinSemDelete, Bin 1
 [ PASS] 03.053 osal-core-test.c:342 - OS_BinSemDelete, Bin 2
 [ PASS] 03.054 osal-core-test.c:345 - OS_BinSemDelete, Bin 3
-[  END] 03 BSEM                 TOTAL::54    PASS::54    FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 04 MSEM
+[  END] 03 BSEM                 TOTAL::54    PASS::54    FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 04 MSEM
 [ PASS] 04.001 osal-core-test.c:368 - OS_MutSemCreate, nominal
 [ PASS] 04.002 osal-core-test.c:368 - OS_MutSemCreate, nominal
 [ PASS] 04.003 osal-core-test.c:368 - OS_MutSemCreate, nominal
@@ -3410,8 +3410,8 @@ Login into RTEMS
 [ PASS] 04.052 osal-core-test.c:431 - OS_MutSemDelete, Mut 1
 [ PASS] 04.053 osal-core-test.c:435 - OS_MutSemDelete, Mut 2
 [ PASS] 04.054 osal-core-test.c:439 - OS_MutSemDelete, Mut 3
-[  END] 04 MSEM                 TOTAL::54    PASS::54    FAIL::0      MIR::0      TSF::0      N/A::0   
-[BEGIN] 05 INFO
+[  END] 04 MSEM                 TOTAL::54    PASS::54    FAIL::0      MIR::0      TSF::0      N/A::0   
+[BEGIN] 05 INFO
 [ PASS] 05.001 osal-core-test.c:505 - OS_TaskCreate
 [ PASS] 05.002 osal-core-test.c:509 - OS_QueueCreate
 [ PASS] 05.003 osal-core-test.c:513 - OS_BinSemCreate
@@ -3424,30 +3424,30 @@ Login into RTEMS
 [ PASS] 05.010 osal-core-test.c:538 - OS_QueueDelete
 [ PASS] 05.011 osal-core-test.c:543 - OS_BinSemDelete
 [ PASS] 05.012 osal-core-test.c:548 - OS_MutSemDelete
-[  END] 05 INFO                 TOTAL::12    PASS::12    FAIL::0      MIR::0      TSF::0      N/A::0   
-[  END] 05 SUMMARY              TOTAL::407   PASS::407   FAIL::0      MIR::0      TSF::0      N/A::0   
-COMPLETE: 5 test segment(s) executed
-*** RTEMS Info ***
-PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-rtems-4.10.99.0(SPARC/w/FPU/sis)
- Stack size=8
- Workspace size=1048576
-*** End RTEMS info ***
-[BEGIN] PC-RTEMS UNIT TEST
-[BEGIN] 01 QueueTimeoutTest
+[  END] 05 INFO                 TOTAL::12    PASS::12    FAIL::0      MIR::0      TSF::0      N/A::0   
+[  END] 05 SUMMARY              TOTAL::407   PASS::407   FAIL::0      MIR::0      TSF::0      N/A::0   
+COMPLETE: 5 test segment(s) executed
+*** RTEMS Info ***
+PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+rtems-4.10.99.0(SPARC/w/FPU/sis)
+ Stack size=8
+ Workspace size=1048576
+*** End RTEMS info ***
+[BEGIN] PC-RTEMS UNIT TEST
+[BEGIN] 01 QueueTimeoutTest
 [ PASS] 01.001 queue-timeout-test.c:150 - MsgQ create Id=0 Rc=0
 [ PASS] 01.002 queue-timeout-test.c:156 - Task 1 create Id=0 Rc=0
 [ PASS] 01.003 queue-timeout-test.c:162 - Task 2 create Id=1 Rc=0
 [ PASS] 01.004 queue-timeout-test.c:168 - Timer 1 create Id=0 Rc=0
-[ INFO] Timer Accuracy = 10000 microseconds 
-[ PASS] 01.005 queue-timeout-test.c:175 - Timer 1 set Rc=0
-Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
-COPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-Login into RTEMS
-/dev/console login: Starting task 1
-Delay for 1 second before starting
+[ INFO] Timer Accuracy = 10000 microseconds 
+[ PASS] 01.005 queue-timeout-test.c:175 - Timer 1 set Rc=0
+Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
+COPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+Login into RTEMS
+/dev/console login: Starting task 1
+Delay for 1 second before starting
 TASK 1: Timeout on Queue! Timer counter = 21
 TASK 1: Timeout on Queue! Timer counter = 31
 TASK 1: Timeout on Queue! Timer counter = 41
@@ -3462,35 +3462,35 @@ TASK 1: Timeout on Queue! Timer counter = 91
 [ PASS] 01.009 queue-timeout-test.c:115 - Task 1 messages = 0
 [ PASS] 01.010 queue-timeout-test.c:119 - Task 1 timeouts 8 <= 10
 [ PASS] 01.011 queue-timeout-test.c:123 - Task 1 timeouts 8 >= 6
-[  END] 01 QueueTimeoutTest     TOTAL::11    PASS::11    FAIL::0      MIR::0      TSF::0      N/A::0   
-COMPLETE: 1 test segment(s) executed
-*** RTEMS Info ***
-PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-rtems-4.10.99.0(SPARC/w/FPU/sis)
- Stack size=8
- Workspace size=1048576
-*** End RTEMS info ***
-[BEGIN] PC-RTEMS UNIT TEST
-[BEGIN] 01 TimerTest
-[ PASS] 01.001 timer-test.c:73 - Timer Test Task Created RC=0
-Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
-COPYRIGHT (c) 1989-2008.
-On-Line Applications Research Corporation (OAR).
-Login into RTEMS
-/dev/console login: [ PASS] 01.002 timer-test.c:103 - Timer 0 Created RC=0 ID=0
-[ INFO] Timer 0 Accuracy = 10000 microseconds 
+[  END] 01 QueueTimeoutTest     TOTAL::11    PASS::11    FAIL::0      MIR::0      TSF::0      N/A::0   
+COMPLETE: 1 test segment(s) executed
+*** RTEMS Info ***
+PC-RTEMS UNIT TESTCOPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+rtems-4.10.99.0(SPARC/w/FPU/sis)
+ Stack size=8
+ Workspace size=1048576
+*** End RTEMS info ***
+[BEGIN] PC-RTEMS UNIT TEST
+[BEGIN] 01 TimerTest
+[ PASS] 01.001 timer-test.c:73 - Timer Test Task Created RC=0
+Welcome to rtems-4.10.99.0(SPARC/w/FPU/sis)
+COPYRIGHT (c) 1989-2008.
+On-Line Applications Research Corporation (OAR).
+Login into RTEMS
+/dev/console login: [ PASS] 01.002 timer-test.c:103 - Timer 0 Created RC=0 ID=0
+[ INFO] Timer 0 Accuracy = 10000 microseconds 
 [ PASS] 01.003 timer-test.c:108 - Timer 0 programmed RC=0
 [ PASS] 01.004 timer-test.c:103 - Timer 1 Created RC=0 ID=1
-[ INFO] Timer 1 Accuracy = 10000 microseconds 
+[ INFO] Timer 1 Accuracy = 10000 microseconds 
 [ PASS] 01.005 timer-test.c:108 - Timer 1 programmed RC=0
 [ PASS] 01.006 timer-test.c:103 - Timer 2 Created RC=0 ID=2
-[ INFO] Timer 2 Accuracy = 10000 microseconds 
+[ INFO] Timer 2 Accuracy = 10000 microseconds 
 [ PASS] 01.007 timer-test.c:108 - Timer 2 programmed RC=0
 [ PASS] 01.008 timer-test.c:103 - Timer 3 Created RC=0 ID=3
-[ INFO] Timer 3 Accuracy = 10000 microseconds 
+[ INFO] Timer 3 Accuracy = 10000 microseconds 
 [ PASS] 01.009 timer-test.c:108 - Timer 3 programmed RC=0
-[ INFO] Starting Delay loop.
+[ INFO] Starting Delay loop.
 [ PASS] 01.010 timer-test.c:135 - Timer 0 delete RC=0. Count total = 61
 [ PASS] 01.011 timer-test.c:135 - Timer 1 delete RC=0. Count total = 71
 [ PASS] 01.012 timer-test.c:135 - Timer 2 delete RC=0. Count total = 34
@@ -3503,6 +3503,6 @@ Login into RTEMS
 [ PASS] 01.019 timer-test.c:170 - Timer 2 count <= 36
 [ PASS] 01.020 timer-test.c:169 - Timer 3 count >= 40
 [ PASS] 01.021 timer-test.c:170 - Timer 3 count <= 46
-[  END] 01 TimerTest            TOTAL::21    PASS::21    FAIL::0      MIR::0      TSF::0      N/A::0   
-COMPLETE: 1 test segment(s) executed
+[  END] 01 TimerTest            TOTAL::21    PASS::21    FAIL::0      MIR::0      TSF::0      N/A::0   
+COMPLETE: 1 test segment(s) executed
 ==========================================================================
