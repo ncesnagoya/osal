@@ -429,7 +429,6 @@ KERNEL_DOMAIN {
 int32 OS_TaskDelete (uint32 task_id)
 {    
     FuncPtr_t         FunctionPointer;
-    rtems_status_code status;
     
     /* 
     ** Check to see if the task_id given is valid 
@@ -449,16 +448,16 @@ int32 OS_TaskDelete (uint32 task_id)
     }
 
     /* Try to delete the task */
-    if (rtems_task_delete(OS_task_table[task_id].id) != RTEMS_SUCCESSFUL)
+    if (del_tsk(OS_task_table[task_id].id) != E_OK)
     {
-	return OS_ERROR;
+      return OS_ERROR;
     }
     
     /*
      * Now that the task is deleted, remove its 
      * "presence" in OS_task_table
     */
-    status = rtems_semaphore_obtain (OS_task_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_task_table_sem);
     OS_task_table[task_id].free = TRUE;
     OS_task_table[task_id].id = UNINITIALIZED;
     OS_task_table[task_id].name[0] = '\0';
@@ -466,7 +465,7 @@ int32 OS_TaskDelete (uint32 task_id)
     OS_task_table[task_id].stack_size = UNINITIALIZED;
     OS_task_table[task_id].priority = UNINITIALIZED;
     OS_task_table[task_id].delete_hook_pointer = NULL;            
-    status = rtems_semaphore_release (OS_task_table_sem);
+    unl_mtx(OS_task_table_sem);
     
     return OS_SUCCESS;
     
