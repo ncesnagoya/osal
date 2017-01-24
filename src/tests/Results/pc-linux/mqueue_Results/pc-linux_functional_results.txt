@@ -1,13 +1,41 @@
 The OSAL functional tests were run in the following pc-linux environment:
 
-Linux wirbelwind 4.3.3-gentoo #2 SMP PREEMPT Sun Dec 20 15:26:01 EST 2015
-x86_64 Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz GenuineIntel GNU/Linux
-gentoo linux/64bit
-Mon Jan 25 13:12:37 EST 2016
+System info:
+Linux jsc-er-isl03.jsc.nasa.gov 2.6.32-504.30.3.el6.x86_64 #1 SMP Wed Jul 15 10:13:09 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux
 
-Functional tests built with gcc-5.3 and glibc 2.21-r1
+GCC info:
+Using built-in specs.
+Target: x86_64-redhat-linux
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-languages=c,c++,objc,obj-c++,java,fortran,ada --enable-java-awt=gtk --disable-dssi --with-java-home=/usr/lib/jvm/java-1.5.0-gcj-1.5.0.0/jre --enable-libgcj-multifile --enable-java-maintainer-mode --with-ecj-jar=/usr/share/java/eclipse-ecj.jar --disable-libjava-multilib --with-ppl --with-cloog --with-tune=generic --with-arch_32=i686 --build=x86_64-redhat-linux
+Thread model: posix
+gcc version 4.4.7 20120313 (Red Hat 4.4.7-16) (GCC) 
 
-The functional tests are expected to produce the following results:
+libc info:
+GNU C Library stable release version 2.12, by Roland McGrath et al.
+Copyright (C) 2010 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+Compiled by GNU CC version 4.4.7 20120313 (Red Hat 4.4.7-16).
+Compiled on a Linux 2.6.32 system on 2016-02-16.
+Available extensions:
+        The C stubs add-on version 2.1.2.
+        crypt add-on version 2.1 by Michael Glad and others
+        GNU Libidn by Simon Josefsson
+        Native POSIX Threads Library by Ulrich Drepper et al
+        BIND-8.2.3-T5B
+        RT using linux kernel aio
+libc ABIs: UNIQUE IFUNC
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/libc/bugs.html>.
+
+Manually applied -m32 change to build/osal-config.mak.
+Manually applied -export-dynamic to src/bsp/pc-linux/make/link-rules.mak.
+
+All functional tests have the same pass/fail/other statistics as OSAL 4.2.0.
+
+date:
+Tue Aug 23 16:24:17 CDT 2016
 
 [BEGIN] PC-LINUX UNIT TEST
 Making directories: ram0, ram1, eeprom1 for OSAL mount points
@@ -18,95 +46,95 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 [ PASS] 01.003 bin-sem-flush-test.c:201 - BinSem1 take Rc=0
 [ PASS] 01.004 bin-sem-flush-test.c:203 - BinSem1 value=0 Rc=0
 [ PASS] 01.005 bin-sem-flush-test.c:209 - Task 1 create Id=0 Rc=0
+[ PASS] 01.006 bin-sem-flush-test.c:212 - Task 2 create Id=1 Rc=0
+[ PASS] 01.007 bin-sem-flush-test.c:215 - Task 3 create Id=2 Rc=0
 Starting task 1
 TASK 1: Waiting on the semaphore
-Starting task 2
-[ PASS] 01.006 bin-sem-flush-test.c:212 - Task 2 create Id=1 Rc=0
-TASK 2: Waiting on the semaphore
 Starting task 3
-[ PASS] 01.007 bin-sem-flush-test.c:215 - Task 3 create Id=2 Rc=0
 TASK 3: Waiting on the semaphore
+Starting task 2
+TASK 2: Waiting on the semaphore
 [ PASS] 01.008 bin-sem-flush-test.c:228 - Task 1 work = 0
 [ PASS] 01.009 bin-sem-flush-test.c:229 - Task 2 work = 0
 [ PASS] 01.010 bin-sem-flush-test.c:230 - Task 3 work = 0
 [ PASS] 01.011 bin-sem-flush-test.c:233 - BinSem1 flush Rc=0
 TASK 1: out of BinSemTake: 0
-TASK 2: out of BinSemTake: -1
-TASK 3: out of BinSemTake: -2
-TASK 2:   Doing some work: 0
+TASK 3: out of BinSemTake: -1
+TASK 2: out of BinSemTake: -2
 TASK 1:   Doing some work: 0
 TASK 3:   Doing some work: 0
-TASK 2:   Doing some work: 1
+TASK 2:   Doing some work: 0
 TASK 1:   Doing some work: 1
 TASK 3:   Doing some work: 1
-TASK 2:   Doing some work: 2
+TASK 2:   Doing some work: 1
 TASK 1:   Doing some work: 2
 TASK 3:   Doing some work: 2
+TASK 2:   Doing some work: 2
 TASK 1:   Doing some work: 3
-TASK 2:   Doing some work: 3
 TASK 3:   Doing some work: 3
+TASK 2:   Doing some work: 3
 TASK 1:   Doing some work: 4
-TASK 2:   Doing some work: 4
 TASK 3:   Doing some work: 4
-TASK 2:   Doing some work: 5
+TASK 2:   Doing some work: 4
 TASK 1:   Doing some work: 5
 TASK 3:   Doing some work: 5
+TASK 2:   Doing some work: 5
 TASK 1:   Doing some work: 6
 TASK 2:   Doing some work: 6
 TASK 3:   Doing some work: 6
-TASK 2:   Doing some work: 7
 TASK 1:   Doing some work: 7
+TASK 2:   Doing some work: 7
 TASK 3:   Doing some work: 7
 TASK 1:   Doing some work: 8
 TASK 2:   Doing some work: 8
 TASK 3:   Doing some work: 8
-TASK 1:   Doing some work: 9
-TASK 2:   Doing some work: 9
 TASK 3:   Doing some work: 9
-TASK 1:   Doing some work: 10
+TASK 2:   Doing some work: 9
+TASK 1:   Doing some work: 9
 TASK 2:   Doing some work: 10
 TASK 3:   Doing some work: 10
+TASK 1:   Doing some work: 10
 TASK 2:   Doing some work: 11
 TASK 1:   Doing some work: 11
 TASK 3:   Doing some work: 11
+TASK 3:   Doing some work: 12
 TASK 1:   Doing some work: 12
 TASK 2:   Doing some work: 12
-TASK 3:   Doing some work: 12
-TASK 2:   Doing some work: 13
-TASK 1:   Doing some work: 13
 TASK 3:   Doing some work: 13
+TASK 1:   Doing some work: 13
+TASK 2:   Doing some work: 13
 TASK 1:   Doing some work: 14
-TASK 2:   Doing some work: 14
 TASK 3:   Doing some work: 14
-TASK 2:   Doing some work: 15
-TASK 1:   Doing some work: 15
+TASK 2:   Doing some work: 14
 TASK 3:   Doing some work: 15
-TASK 2:   Doing some work: 16
-TASK 1:   Doing some work: 16
+TASK 1:   Doing some work: 15
+TASK 2:   Doing some work: 15
 TASK 3:   Doing some work: 16
+TASK 1:   Doing some work: 16
+TASK 2:   Doing some work: 16
+TASK 3:   Doing some work: 17
 TASK 1:   Doing some work: 17
 TASK 2:   Doing some work: 17
-TASK 3:   Doing some work: 17
+TASK 3:   Doing some work: 18
 TASK 2:   Doing some work: 18
 TASK 1:   Doing some work: 18
-TASK 3:   Doing some work: 18
-TASK 1:   Doing some work: 19
-TASK 2:   Doing some work: 19
 TASK 3:   Doing some work: 19
-TASK 1:   Doing some work: 20
+TASK 2:   Doing some work: 19
+TASK 1:   Doing some work: 19
 TASK 2:   Doing some work: 20
 TASK 3:   Doing some work: 20
+TASK 1:   Doing some work: 20
 TASK 2:   Doing some work: 21
-TASK 1:   Doing some work: 21
 TASK 3:   Doing some work: 21
+TASK 1:   Doing some work: 21
 TASK 2:   Doing some work: 22
 TASK 1:   Doing some work: 22
 TASK 3:   Doing some work: 22
 TASK 2:   Doing some work: 23
 TASK 1:   Doing some work: 23
 TASK 3:   Doing some work: 23
-TASK 1:   Doing some work: 24
 TASK 2:   Doing some work: 24
+TASK 1:   Doing some work: 24
 TASK 3:   Doing some work: 24
 TASK 2:   Doing some work: 25
 TASK 1:   Doing some work: 25
@@ -117,39 +145,39 @@ TASK 3:   Doing some work: 26
 TASK 2:   Doing some work: 27
 TASK 1:   Doing some work: 27
 TASK 3:   Doing some work: 27
-TASK 2:   Doing some work: 28
 TASK 1:   Doing some work: 28
+TASK 2:   Doing some work: 28
 TASK 3:   Doing some work: 28
-TASK 2:   Doing some work: 29
-TASK 1:   Doing some work: 29
 TASK 3:   Doing some work: 29
-TASK 2:   Doing some work: 30
+TASK 1:   Doing some work: 29
+TASK 2:   Doing some work: 29
 TASK 1:   Doing some work: 30
+TASK 2:   Doing some work: 30
 TASK 3:   Doing some work: 30
-TASK 1:   Doing some work: 31
 TASK 2:   Doing some work: 31
 TASK 3:   Doing some work: 31
+TASK 1:   Doing some work: 31
+TASK 3:   Doing some work: 32
 TASK 2:   Doing some work: 32
 TASK 1:   Doing some work: 32
-TASK 3:   Doing some work: 32
-TASK 2:   Doing some work: 33
 TASK 1:   Doing some work: 33
 TASK 3:   Doing some work: 33
+TASK 2:   Doing some work: 33
 TASK 2:   Doing some work: 34
-TASK 1:   Doing some work: 34
 TASK 3:   Doing some work: 34
+TASK 1:   Doing some work: 34
 TASK 2:   Doing some work: 35
-TASK 1:   Doing some work: 35
 TASK 3:   Doing some work: 35
+TASK 1:   Doing some work: 35
 TASK 2:   Doing some work: 36
-TASK 1:   Doing some work: 36
 TASK 3:   Doing some work: 36
+TASK 1:   Doing some work: 36
 TASK 2:   Doing some work: 37
-TASK 1:   Doing some work: 37
 TASK 3:   Doing some work: 37
+TASK 1:   Doing some work: 37
 TASK 2:   Doing some work: 38
-TASK 1:   Doing some work: 38
 TASK 3:   Doing some work: 38
+TASK 1:   Doing some work: 38
 [ PASS] 01.012 bin-sem-flush-test.c:241 - Task 1 work = 40
 [ PASS] 01.013 bin-sem-flush-test.c:242 - Task 2 work = 40
 [ PASS] 01.014 bin-sem-flush-test.c:243 - Task 3 work = 40
@@ -172,10 +200,10 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 [ PASS] 01.002 bin-sem-test.c:196 - BinSem1 value=1 Rc=0
 [ PASS] 01.003 bin-sem-test.c:202 - BinSem1 take Rc=0
 [ PASS] 01.004 bin-sem-test.c:204 - BinSem1 value=0 Rc=0
-Starting task 1
 [ PASS] 01.005 bin-sem-test.c:210 - Task 1 create Id=0 Rc=0
-Delay for 1 second before starting
+Starting task 1
 [ PASS] 01.006 bin-sem-test.c:216 - Task 2 create Id=1 Rc=0
+Delay for 1 second before starting
 [ PASS] 01.007 bin-sem-test.c:222 - Timer 1 create Id=0 Rc=0
 [ INFO] Timer Accuracy = 0 microseconds 
 
@@ -206,9 +234,9 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 [ PASS] 01.003 bin-sem-timeout-test.c:211 - BinSem1 take Rc=0
 [ PASS] 01.004 bin-sem-timeout-test.c:213 - BinSem1 value=0 Rc=0
 [ PASS] 01.005 bin-sem-timeout-test.c:219 - Task 1 create Id=0 Rc=0
+[ PASS] 01.006 bin-sem-timeout-test.c:225 - Task 2 create Id=1 Rc=0
 Starting task 1
 Delay for 1 second before starting
-[ PASS] 01.006 bin-sem-timeout-test.c:225 - Task 2 create Id=1 Rc=0
 [ PASS] 01.007 bin-sem-timeout-test.c:231 - Timer 1 create Id=0 Rc=0
 [ INFO] Timer Accuracy = 0 microseconds 
 
@@ -271,52 +299,52 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 [ PASS] 01.001 count-sem-test.c:161 - CountSem1 create Id=0 Rc=0
 [ PASS] 01.002 count-sem-test.c:169 - CountSem1 take Rc=0
 [ PASS] 01.003 count-sem-test.c:169 - CountSem1 take Rc=0
-Starting task 1
 [ PASS] 01.004 count-sem-test.c:176 - Task 1 create Id=0 Rc=0
-Starting task 2
 [ PASS] 01.005 count-sem-test.c:179 - Task 2 create Id=1 Rc=0
-Starting task 3
+Starting task 1
 [ PASS] 01.006 count-sem-test.c:182 - Task 3 create Id=2 Rc=0
-TASK 2: Waiting on the semaphore
+Starting task 3
+Starting task 2
 TASK 3: Waiting on the semaphore
+TASK 2: Waiting on the semaphore
 TASK 1: Giving the counting semaphore 1
 TASK 1: Counting Sem Give 1 complete
-TASK 2: grabbed Counting Sem
+TASK 3: grabbed Counting Sem
 TASK 1: Giving the counting semaphore 2
 TASK 1: Counting Sem Give 2 complete
-TASK 3: grabbed Counting Sem
-TASK 2: Waiting on the semaphore
+TASK 2: grabbed Counting Sem
 TASK 3: Waiting on the semaphore
+TASK 2: Waiting on the semaphore
 TASK 1: Giving the counting semaphore 1
 TASK 1: Counting Sem Give 1 complete
-TASK 2: grabbed Counting Sem
+TASK 3: grabbed Counting Sem
 TASK 1: Giving the counting semaphore 2
 TASK 1: Counting Sem Give 2 complete
-TASK 3: grabbed Counting Sem
-TASK 2: Waiting on the semaphore
+TASK 2: grabbed Counting Sem
 TASK 3: Waiting on the semaphore
+TASK 2: Waiting on the semaphore
 TASK 1: Giving the counting semaphore 1
 TASK 1: Counting Sem Give 1 complete
-TASK 2: grabbed Counting Sem
+TASK 3: grabbed Counting Sem
 TASK 1: Giving the counting semaphore 2
 TASK 1: Counting Sem Give 2 complete
-TASK 3: grabbed Counting Sem
-TASK 2: Waiting on the semaphore
+TASK 2: grabbed Counting Sem
 TASK 3: Waiting on the semaphore
+TASK 2: Waiting on the semaphore
 TASK 1: Giving the counting semaphore 1
 TASK 1: Counting Sem Give 1 complete
-TASK 2: grabbed Counting Sem
+TASK 3: grabbed Counting Sem
 TASK 1: Giving the counting semaphore 2
 TASK 1: Counting Sem Give 2 complete
-TASK 3: grabbed Counting Sem
-TASK 2: Waiting on the semaphore
+TASK 2: grabbed Counting Sem
 TASK 3: Waiting on the semaphore
+TASK 2: Waiting on the semaphore
 TASK 1: Giving the counting semaphore 1
 TASK 1: Counting Sem Give 1 complete
-TASK 2: grabbed Counting Sem
+TASK 3: grabbed Counting Sem
 TASK 1: Giving the counting semaphore 2
 TASK 1: Counting Sem Give 2 complete
-TASK 3: grabbed Counting Sem
+TASK 2: grabbed Counting Sem
 [ PASS] 01.007 count-sem-test.c:196 - Task 1 delete Rc=0
 [ PASS] 01.008 count-sem-test.c:198 - Task 2 delete Rc=0
 [ PASS] 01.009 count-sem-test.c:200 - Task 3 delete Rc=0
@@ -379,7 +407,7 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 [ PASS] 04.010 file-api-test.c:283 - Read: ValueToWriteInTheFile, Written: ValueToWriteInTheFile
 [ PASS] 04.011 file-api-test.c:288 - status after lseek = 12
 [ PASS] 04.012 file-api-test.c:293 - status after read = 9 size = 9
-[ PASS] 04.013 file-api-test.c:297 - Read: InTheFile     MIR::0      TSF::0/drive0/Filename1, Written: InTheFile
+[ PASS] 04.013 file-api-test.c:297 - Read: InTheFile, Written: InTheFile
 [ PASS] 04.014 file-api-test.c:302 - status after close = 0
 [ PASS] 04.015 file-api-test.c:306 - status after reopen = 0
 [ PASS] 04.016 file-api-test.c:312 - status after write = 21 size = 21
@@ -392,7 +420,7 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 
 
 [BEGIN] 05 TestMkRmDirFreeBytes
-[ PASS] 05.001 file-api-test.c:365 - Checking Free Blocks: 129963575
+[ PASS] 05.001 file-api-test.c:365 - Checking Free Blocks: 28784829
 [ PASS] 05.002 file-api-test.c:369 - status after mkdir 1 = 0
 [ PASS] 05.003 file-api-test.c:372 - status after mkdir 2 = 0
 [ PASS] 05.004 file-api-test.c:377 - status after creat 1 = 0
@@ -401,7 +429,7 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 [ PASS] 05.007 file-api-test.c:393 - status after write 2 = 12 size = 12
 [ PASS] 05.008 file-api-test.c:397 - status after lseek 1 = 0
 [ PASS] 05.009 file-api-test.c:400 - status after lseek 2 = 0
-[ PASS] 05.010 file-api-test.c:405 - Checking Free Blocks: 129963571
+[ PASS] 05.010 file-api-test.c:405 - Checking Free Blocks: 28784828
 [ PASS] 05.011 file-api-test.c:410 - status after read 1 = 12 size = 12
 [ PASS] 05.012 file-api-test.c:414 - Read: 111111111111, Written: 111111111111
 [ PASS] 05.013 file-api-test.c:419 - status after read 2 = 12 size = 12
@@ -412,7 +440,7 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 [ PASS] 05.018 file-api-test.c:438 - status after remove 2 = 0
 [ PASS] 05.019 file-api-test.c:441 - status after rmdir 1 = 0
 [ PASS] 05.020 file-api-test.c:444 - status after rmdir 2 = 0
-[ PASS] 05.021 file-api-test.c:447 - Checking Free Blocks: 129963574
+[ PASS] 05.021 file-api-test.c:447 - Checking Free Blocks: 28784829
 [  END] 05 TestMkRmDirFreeBytes TOTAL::21    PASS::21    FAIL::0      MIR::0      TSF::0      N/A::0   
 
 
@@ -506,12 +534,12 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 [ PASS] 01.003 mutex-test.c:231 - OS_MutSemTake 2 Rc=0
 [ PASS] 01.004 mutex-test.c:234 - OS_MutSemGive 2 Rc=0
 [ PASS] 01.005 mutex-test.c:237 - OS_MutSemGive 1 Rc=0
-Starting task 1
 [ PASS] 01.006 mutex-test.c:243 - Task 1 create Id=0 Rc=0
-Starting task 2
+Starting task 1
 [ PASS] 01.007 mutex-test.c:246 - Task 2 create Id=1 Rc=0
-Starting task 3
+Starting task 2
 [ PASS] 01.008 mutex-test.c:249 - Task 3 create Id=2 Rc=0
+Starting task 3
 TASK 1 Has the Mutex
 TASK 1   Doing some work: 0
 TASK 1 Released the Mutex
@@ -536,12 +564,12 @@ TASK 1 Released the Mutex
 TASK 1 Has the Mutex
 TASK 1   Doing some work: 7
 TASK 1 Released the Mutex
-TASK 3 Has the Mutex
-TASK 3:   Doing some work: 8
-TASK 3 Released the Mutex
 TASK 2 Has the Mutex
-TASK 2:   Doing some work: 9
+TASK 2:   Doing some work: 8
 TASK 2 Released the Mutex
+TASK 3 Has the Mutex
+TASK 3:   Doing some work: 9
+TASK 3 Released the Mutex
 TASK 1 Has the Mutex
 TASK 1   Doing some work: 10
 TASK 1 Released the Mutex
@@ -812,6 +840,9 @@ TASK 1 Released the Mutex
 TASK 1 Has the Mutex
 TASK 1   Doing some work: 99
 TASK 1 Released the Mutex
+TASK 2 Has the Mutex
+TASK 2:   Doing some work: 100
+TASK 2 Released the Mutex
 [ PASS] 01.009 mutex-test.c:263 - Task 1 delete Rc=0
 [ PASS] 01.010 mutex-test.c:265 - Task 2 delete Rc=0
 [ PASS] 01.011 mutex-test.c:267 - Task 3 delete Rc=0
@@ -1262,10 +1293,10 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 
 [BEGIN] 01 QueueTimeoutTest
 [ PASS] 01.001 queue-timeout-test.c:150 - MsgQ create Id=0 Rc=0
-Starting task 1
 [ PASS] 01.002 queue-timeout-test.c:156 - Task 1 create Id=0 Rc=0
-Delay for 1 second before starting
 [ PASS] 01.003 queue-timeout-test.c:162 - Task 2 create Id=1 Rc=0
+Starting task 1
+Delay for 1 second before starting
 [ PASS] 01.004 queue-timeout-test.c:168 - Timer 1 create Id=0 Rc=0
 [ INFO] Timer Accuracy = 0 microseconds 
 
@@ -1274,17 +1305,16 @@ TASK 1: Timeout on Queue! Timer counter = 20
 TASK 1: Timeout on Queue! Timer counter = 30
 TASK 1: Timeout on Queue! Timer counter = 40
 TASK 1: Timeout on Queue! Timer counter = 50
-TASK 1: Timeout on Queue! Timer counter = 60
-TASK 1: Timeout on Queue! Timer counter = 70
-TASK 1: Timeout on Queue! Timer counter = 80
-TASK 1: Timeout on Queue! Timer counter = 90
-TASK 1: Timeout on Queue! Timer counter = 100
+TASK 1: Timeout on Queue! Timer counter = 61
+TASK 1: Timeout on Queue! Timer counter = 71
+TASK 1: Timeout on Queue! Timer counter = 81
+TASK 1: Timeout on Queue! Timer counter = 91
 [ PASS] 01.006 queue-timeout-test.c:104 - Timer delete Rc=0
 [ PASS] 01.007 queue-timeout-test.c:106 - Task 1 delete Rc=0
 [ PASS] 01.008 queue-timeout-test.c:109 - Task 1 failures = 0
 [ PASS] 01.009 queue-timeout-test.c:115 - Task 1 messages = 0
-[ PASS] 01.010 queue-timeout-test.c:119 - Task 1 timeouts 9 <= 10
-[ PASS] 01.011 queue-timeout-test.c:123 - Task 1 timeouts 9 >= 6
+[ PASS] 01.010 queue-timeout-test.c:119 - Task 1 timeouts 8 <= 10
+[ PASS] 01.011 queue-timeout-test.c:123 - Task 1 timeouts 8 >= 6
 [  END] 01 QueueTimeoutTest     TOTAL::11    PASS::11    FAIL::0      MIR::0      TSF::0      N/A::0   
 
 COMPLETE: 1 tests Segment(s) executed
@@ -1305,8 +1335,8 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 [ INFO] Dumping symbol table with a limit of 524288 bytes
 
 [ PASS] 01.005 symbol-api-test.c:48 - status after 512k OS_SymbolTableDump = -28
-[ PASS] 01.006 symbol-api-test.c:54 - OS_SymbolLookup(OS_Application_Startup) = 0, Addr = 405227
-[ PASS] 01.007 symbol-api-test.c:60 - OS_SymbolLookup(ShouldNotExist) = -1, Addr = 405227
+[ PASS] 01.006 symbol-api-test.c:54 - OS_SymbolLookup(OS_Application_Startup) = 0, Addr = 804c1b4
+[ PASS] 01.007 symbol-api-test.c:60 - OS_SymbolLookup(ShouldNotExist) = -1, Addr = 804c1b4
 [  END] 01 SymbolApiTest        TOTAL::7     PASS::7     FAIL::0      MIR::0      TSF::0      N/A::0   
 
 COMPLETE: 1 tests Segment(s) executed
@@ -1351,4 +1381,3 @@ Making directories: ram0, ram1, eeprom1 for OSAL mount points
 
 COMPLETE: 1 tests Segment(s) executed
 
-==========================================================================

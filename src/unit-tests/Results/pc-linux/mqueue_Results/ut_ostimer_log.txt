@@ -4,57 +4,57 @@ OSAL Unit Test Output File for ostimer APIs
 
 OS_TimerSet() - #3 Interval-too-short (clk_accuracy=0)
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859475, delta_time=0, tolVal=0, loopCnt=0]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869889, delta_time=1, tolVal=0, loopCnt=0]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859475, delta_time=15, tolVal=0, loopCnt=1]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869890, delta_time=33, tolVal=0, loopCnt=1]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859490, delta_time=4, tolVal=0, loopCnt=2]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869924, delta_time=24, tolVal=0, loopCnt=2]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859501, delta_time=0, tolVal=0, loopCnt=3]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869934, delta_time=0, tolVal=0, loopCnt=3]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859512, delta_time=3, tolVal=0, loopCnt=4]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869944, delta_time=1, tolVal=0, loopCnt=4]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859520, delta_time=2, tolVal=0, loopCnt=5]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869953, delta_time=1, tolVal=0, loopCnt=5]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859526, delta_time=4, tolVal=0, loopCnt=6]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869961, delta_time=1, tolVal=0, loopCnt=6]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859536, delta_time=1, tolVal=0, loopCnt=7]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869970, delta_time=0, tolVal=0, loopCnt=7]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859545, delta_time=4, tolVal=0, loopCnt=8]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869979, delta_time=8, tolVal=0, loopCnt=8]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859550, delta_time=5, tolVal=0, loopCnt=9]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869996, delta_time=9, tolVal=0, loopCnt=9]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.859550, delta_time=13, tolVal=0, loopCnt=10]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.869996, delta_time=3, tolVal=0, loopCnt=10]
 
 OS_TimerSet() - #1 Nominal condition (clk_accuracy=0)
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.861697, delta_time=1, tolVal=25000, loopCnt=0]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.872060, delta_time=1, tolVal=25000, loopCnt=0]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401645.861698, delta_time=499940, tolVal=25000, loopCnt=1]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987560.872061, delta_time=499969, tolVal=25000, loopCnt=1]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401646.361639, delta_time=125, tolVal=25000, loopCnt=2]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987561.372031, delta_time=24, tolVal=25000, loopCnt=2]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401646.861705, delta_time=55, tolVal=25000, loopCnt=3]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987561.872025, delta_time=4, tolVal=25000, loopCnt=3]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401647.361716, delta_time=106, tolVal=25000, loopCnt=4]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987562.372023, delta_time=2, tolVal=25000, loopCnt=4]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401647.861621, delta_time=94, tolVal=25000, loopCnt=5]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987562.872023, delta_time=2, tolVal=25000, loopCnt=5]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401648.361620, delta_time=104, tolVal=25000, loopCnt=6]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987563.372021, delta_time=2, tolVal=25000, loopCnt=6]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401648.861723, delta_time=188, tolVal=25000, loopCnt=7]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987563.872021, delta_time=0, tolVal=25000, loopCnt=7]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401649.361638, delta_time=86, tolVal=25000, loopCnt=8]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987564.372021, delta_time=2, tolVal=25000, loopCnt=8]
 
-OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1453401649.861639, delta_time=42, tolVal=25000, loopCnt=9]
+OS_TimerSet() - #4 Nominal [Output from timer callback func: current_time=1471987564.872023, delta_time=4, tolVal=25000, loopCnt=9]
 ============================================
 
 ========================================================
 ut_ostimer TOTAL APIs: 6
 ut_ostimer TOTAL TEST CASES: 23
 
-ut_ostimer PASSED  19 tests.
-ut_ostimer FAILED   1 tests.
+ut_ostimer PASSED  20 tests.
+ut_ostimer FAILED   0 tests.
 
 ut_ostimer contains  3 tests that are untested OS-call-failure.
 ut_ostimer contains  0 tests that are manual-inspection-required.
@@ -67,7 +67,7 @@ ut_ostimer TOTAL APIs: 6
 ut_ostimer TOTAL TEST CASES: 23
 --------------------------------------------------------
     OS_TimerAPIInit: 2
-        #1 Init-not-call-first [FAILED]
+        #1 Init-not-call-first [PASSED]
         #2 Nominal [PASSED]
 
     OS_TimerCreate: 7
@@ -102,8 +102,9 @@ ut_ostimer TOTAL TEST CASES: 23
         #4 Nominal [PASSED]
 
 --------------------------------------------------------
-  TOTAL TEST CASES PASSED -> 19
+  TOTAL TEST CASES PASSED -> 20
 --------------------------------------------------------
+    PASSED [ ] OS_TimerAPIInit - #1 Init-not-call-first 
     PASSED [ ] OS_TimerAPIInit - #2 Nominal 
     PASSED [ ] OS_TimerCreate - #1 Null-pointer-arg 
     PASSED [ ] OS_TimerCreate - #2 Name-too-long 
@@ -125,9 +126,8 @@ ut_ostimer TOTAL TEST CASES: 23
     PASSED [ ] OS_TimerSet - #4 Nominal 
 
 --------------------------------------------------------
-  TOTAL TEST CASES FAILED -> 1
+  TOTAL TEST CASES FAILED -> 0
 --------------------------------------------------------
-    FAILED [ ] OS_TimerAPIInit - #1 Init-not-call-first 
 
 --------------------------------------------------------
   TOTAL TEST CASES MANUAL-INSPECTION-REQUIRED -> 0

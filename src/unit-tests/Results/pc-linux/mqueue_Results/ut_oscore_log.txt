@@ -18,24 +18,24 @@ Starting GenericTask: CREATE_TASK6, id: 6
 Starting GenericTask: CREATE_TASK7, id: 7
 Starting GenericTask: CREATE_TASK8, id: 8
 Starting GenericTask: CREATE_TASK9, id: 9
+Starting GenericTask: CREATE_TASK10, id: 10
 Starting GenericTask: CREATE_TASK11, id: 11
 Starting GenericTask: CREATE_TASK12, id: 12
-Starting GenericTask: CREATE_TASK10, id: 10
 Starting GenericTask: CREATE_TASK13, id: 13
 Starting GenericTask: CREATE_TASK14, id: 14
 Starting GenericTask: CREATE_TASK15, id: 15
-Starting GenericTask: CREATE_TASK17, id: 17
-Starting GenericTask: CREATE_TASK19, id: 19
-Starting GenericTask: CREATE_TASK18, id: 18
 Starting GenericTask: CREATE_TASK16, id: 16
+Starting GenericTask: CREATE_TASK17, id: 17
+Starting GenericTask: CREATE_TASK18, id: 18
+Starting GenericTask: CREATE_TASK19, id: 19
 Starting GenericTask: CREATE_TASK20, id: 20
 Starting GenericTask: CREATE_TASK21, id: 21
-Starting GenericTask: CREATE_TASK24, id: 24
-Starting GenericTask: CREATE_TASK23, id: 23
 Starting GenericTask: CREATE_TASK22, id: 22
+Starting GenericTask: CREATE_TASK23, id: 23
+Starting GenericTask: CREATE_TASK24, id: 24
 Starting GenericTask: CREATE_TASK25, id: 25
-Starting GenericTask: CREATE_TASK27, id: 27
 Starting GenericTask: CREATE_TASK26, id: 26
+Starting GenericTask: CREATE_TASK27, id: 27
 Starting GenericTask: CREATE_TASK28, id: 28
 Starting GenericTask: CREATE_TASK29, id: 29
 Starting GenericTask: CREATE_TASK30, id: 30
@@ -45,22 +45,24 @@ Starting GenericTask: CREATE_TASK33, id: 33
 Starting GenericTask: CREATE_TASK34, id: 34
 Starting GenericTask: CREATE_TASK35, id: 35
 Starting GenericTask: CREATE_TASK36, id: 36
-Starting GenericTask: CREATE_TASK39, id: 39
-Starting GenericTask: CREATE_TASK38, id: 38
 Starting GenericTask: CREATE_TASK37, id: 37
+Starting GenericTask: CREATE_TASK38, id: 38
+Starting GenericTask: CREATE_TASK39, id: 39
 Starting GenericTask: CREATE_TASK40, id: 40
-Starting GenericTask: CREATE_TASK43, id: 43
-Starting GenericTask: CREATE_TASK42, id: 42
 Starting GenericTask: CREATE_TASK41, id: 41
+Starting GenericTask: CREATE_TASK42, id: 42
+Starting GenericTask: CREATE_TASK43, id: 43
 Starting GenericTask: CREATE_TASK44, id: 44
-Starting GenericTask: CREATE_TASK48, id: 48
-Starting GenericTask: CREATE_TASK47, id: 47
-Starting GenericTask: CREATE_TASK46, id: 46
-Starting GenericTask: CREATE_TASK49, id: 49
 Starting GenericTask: CREATE_TASK45, id: 45
+Starting GenericTask: CREATE_TASK46, id: 46
+Starting GenericTask: CREATE_TASK47, id: 47
+Starting GenericTask: CREATE_TASK48, id: 48
+Starting GenericTask: CREATE_TASK49, id: 49
 Starting GenericTask: CREATE_TASK50, id: 50
 Starting GenericTask: CREATE_TASK51, id: 51
+Starting GenericTask: CREATE_TASK52, id: 52
 Starting GenericTask: CREATE_TASK53, id: 53
+Starting GenericTask: CREATE_TASK54, id: 54
 Starting GenericTask: CREATE_TASK55, id: 55
 Starting GenericTask: CREATE_TASK56, id: 56
 Starting GenericTask: CREATE_TASK57, id: 57
@@ -69,9 +71,7 @@ Starting GenericTask: CREATE_TASK59, id: 59
 Starting GenericTask: CREATE_TASK60, id: 60
 Starting GenericTask: CREATE_TASK61, id: 61
 Starting GenericTask: CREATE_TASK62, id: 62
-Starting GenericTask: CREATE_TASK54, id: 54
 Starting GenericTask: CREATE_TASK63, id: 63
-Starting GenericTask: CREATE_TASK52, id: 52
 Starting GenericTask: Create_DuplName, id: 0
 Starting GenericTask: Create_Nominal, id: 0
 Starting GenericTask: Delete_Nominal, id: 0
@@ -92,37 +92,37 @@ Starting GenericTask: GetInfo_InvPtr, id: 0
 Starting GenericTask: GetInfo_Nominal, id: 0
 
 ============================================
-OS_GetLocalTime() - #3 Nominal [Expecting output after API call to increase over time: 1453390462.593092]
-OS_GetLocalTime() - #3 Nominal [Expecting output after API call to increase over time: 1453390462.593161]
-OS_GetLocalTime() - #3 Nominal [Expecting output after API call to increase over time: 1453390462.593221]
-OS_GetLocalTime() - #3 Nominal [Expecting output after API call to increase over time: 1453390462.593280]
-OS_GetLocalTime() - #3 Nominal [Expecting output after API call to increase over time: 1453390462.593339]
+OS_GetLocalTime() - #3 Nominal [Expecting output after API call to increase over time: 1471987559.994969]
+OS_GetLocalTime() - #3 Nominal [Expecting output after API call to increase over time: 1471987559.995042]
+OS_GetLocalTime() - #3 Nominal [Expecting output after API call to increase over time: 1471987559.995104]
+OS_GetLocalTime() - #3 Nominal [Expecting output after API call to increase over time: 1471987559.995165]
+OS_GetLocalTime() - #3 Nominal [Expecting output after API call to increase over time: 1471987559.995225]
 ============================================
-OS_SetLocalTime() - #3 Nominal [Expecting output before API call to increase over time: 1453390462.593403]
-OS_SetLocalTime() - #3 Nominal [Expecting output before API call to increase over time: 1453390462.593481]
-OS_SetLocalTime() - #3 Nominal [Expecting output before API call to increase over time: 1453390462.593541]
-OS_SetLocalTime() - #3 Nominal [Expecting output before API call to increase over time: 1453390462.593602]
-OS_SetLocalTime() - #3 Nominal [Expecting output before API call to increase over time: 1453390462.593662]
+OS_SetLocalTime() - #3 Nominal [Expecting output before API call to increase over time: 1471987559.995291]
+OS_SetLocalTime() - #3 Nominal [Expecting output before API call to increase over time: 1471987559.995367]
+OS_SetLocalTime() - #3 Nominal [Expecting output before API call to increase over time: 1471987559.995427]
+OS_SetLocalTime() - #3 Nominal [Expecting output before API call to increase over time: 1471987559.995486]
+OS_SetLocalTime() - #3 Nominal [Expecting output before API call to increase over time: 1471987559.995545]
 
 ========================================================
-ut_oscore TOTAL APIs: 54
-ut_oscore TOTAL TEST CASES: 174
+ut_oscore TOTAL APIs: 46
+ut_oscore TOTAL TEST CASES: 167
 
-ut_oscore PASSED 133 tests.
-ut_oscore FAILED   3 tests.
+ut_oscore PASSED 135 tests.
+ut_oscore FAILED   0 tests.
 
 ut_oscore contains 26 tests that are untested OS-call-failure.
 ut_oscore contains  5 tests that are manual-inspection-required.
 
-ut_oscore contains  7 tests that are not-applicable.
+ut_oscore contains  1 tests that are not-applicable.
 ========================================================
 
 --------------------------------------------------------
-ut_oscore TOTAL APIs: 54
-ut_oscore TOTAL TEST CASES: 174
+ut_oscore TOTAL APIs: 46
+ut_oscore TOTAL TEST CASES: 167
 --------------------------------------------------------
     OS_API_Init: 2
-        #1 Init-not-call-first [FAILED]
+        #1 Init-not-call-first [PASSED]
         #2 Nominal [PASSED]
 
     OS_printf: 1
@@ -281,7 +281,7 @@ ut_oscore TOTAL TEST CASES: 174
         #4 Queue-full [PASSED]
         #5 Nominal [PASSED]
 
-    OS_QueueGet: 8
+    OS_QueueGet: 10
         #1 Invalid-ID-arg [PASSED]
         #2 Invalid-pointer-arg-1 [PASSED]
         #3 Invalid-pointer-arg-2 [PASSED]
@@ -289,7 +289,9 @@ ut_oscore TOTAL TEST CASES: 174
         #5 Queue-timed-out [PASSED]
         #6 Invalid-queue-size [PASSED]
         #7 OS-call-failure [_UOF_ ]
-        #8 Nominal [PASSED]
+        #8 Nominal Pend [PASSED]
+        #9 Nominal timeout [PASSED]
+        #10 Nominal check [PASSED]
 
     OS_QueueGetIdByName: 5
         #1 Invalid-pointer-arg-1 [PASSED]
@@ -378,34 +380,10 @@ ut_oscore TOTAL TEST CASES: 174
         #2 OS-call-failure [_UOF_ ]
         #3 Nominal [__NA__]
 
-    OS_HeapGetInfo: 1
-        API not implemented [__NA__]
-
-    OS_IntAttachHandler: 1
-        API not implemented [__NA__]
-
-    OS_IntEnable: 1
-        API not implemented [__NA__]
-
-    OS_IntDisable: 1
-        API not implemented [__NA__]
-
-    OS_IntLock: 1
-        API not implemented [__NA__]
-
-    OS_IntUnlock: 1
-        API not implemented [__NA__]
-
-    OS_FPUExcSetMask: 1
-        #1 Nominal [FAILED]
-
-    OS_FPUExcGetMask: 2
-        #1 Null-pointer-arg [FAILED]
-        #2 Nominal [PASSED]
-
 --------------------------------------------------------
-  TOTAL TEST CASES PASSED -> 133
+  TOTAL TEST CASES PASSED -> 135
 --------------------------------------------------------
+    PASSED [ ] OS_API_Init - #1 Init-not-call-first 
     PASSED [ ] OS_API_Init - #2 Nominal 
     PASSED [ ] OS_BinSemCreate - #1 Null-pointer-arg-1 
     PASSED [ ] OS_BinSemCreate - #2 Null-pointer-arg-2 
@@ -494,7 +472,9 @@ ut_oscore TOTAL TEST CASES: 174
     PASSED [ ] OS_QueueGet - #4 Queue-empty 
     PASSED [ ] OS_QueueGet - #5 Queue-timed-out 
     PASSED [ ] OS_QueueGet - #6 Invalid-queue-size 
-    PASSED [ ] OS_QueueGet - #8 Nominal 
+    PASSED [ ] OS_QueueGet - #8 Nominal Pend 
+    PASSED [ ] OS_QueueGet - #9 Nominal timeout 
+    PASSED [ ] OS_QueueGet - #10 Nominal check 
     PASSED [ ] OS_QueueGetIdByName - #1 Invalid-pointer-arg-1 
     PASSED [ ] OS_QueueGetIdByName - #2 Invalid-pointer-arg-2 
     PASSED [ ] OS_QueueGetIdByName - #3 Name-too-long 
@@ -538,14 +518,10 @@ ut_oscore TOTAL TEST CASES: 174
     PASSED [ ] OS_Milli2Ticks - #2 Nominal 
     PASSED [ ] OS_GetLocalTime - #1 Null-pointer-arg 
     PASSED [ ] OS_SetLocalTime - #1 Null-pointer-arg 
-    PASSED [ ] OS_FPUExcGetMask - #2 Nominal 
 
 --------------------------------------------------------
-  TOTAL TEST CASES FAILED -> 3
+  TOTAL TEST CASES FAILED -> 0
 --------------------------------------------------------
-    FAILED [ ] OS_API_Init - #1 Init-not-call-first 
-    FAILED [ ] OS_FPUExcSetMask - #1 Nominal 
-    FAILED [ ] OS_FPUExcGetMask - #1 Null-pointer-arg 
 
 --------------------------------------------------------
   TOTAL TEST CASES MANUAL-INSPECTION-REQUIRED -> 5
@@ -557,15 +533,9 @@ ut_oscore TOTAL TEST CASES: 174
     _MIR_  [ ] OS_GetLocalTime - #3 Nominal - Manual inspection required 
 
 --------------------------------------------------------
-  TOTAL TEST CASES NOT-APPLICABLE -> 7
+  TOTAL TEST CASES NOT-APPLICABLE -> 1
 --------------------------------------------------------
     __NA__ [ ] OS_SetLocalTime - #3 Nominal 
-    __NA__ [ ] OS_HeapGetInfo - API not implemented 
-    __NA__ [ ] OS_IntAttachHandler - API not implemented 
-    __NA__ [ ] OS_IntEnable - API not implemented 
-    __NA__ [ ] OS_IntDisable - API not implemented 
-    __NA__ [ ] OS_IntLock - API not implemented 
-    __NA__ [ ] OS_IntUnlock - API not implemented 
 
 --------------------------------------------------------
   TOTAL TEST CASES UNTESTED-OS-CALL-FAILURE -> 26
