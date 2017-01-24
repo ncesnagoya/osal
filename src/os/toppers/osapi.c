@@ -509,16 +509,15 @@ void OS_TaskExit()
 ---------------------------------------------------------------------------------------*/
 int32 OS_TaskDelay (uint32 milli_second)
 {
-    rtems_interval     ticks;  
-    rtems_status_code status;
-	
-    ticks = OS_Milli2Ticks(milli_second);
-    status = rtems_task_wake_after(ticks);
+    ER      ercd;
 
-    /*
-    ** Always successful ( from RTEMS docs )
-    */
-    return(OS_SUCCESS) ;
+    ercd = tslp_tsk((TMO)(milli_second));
+    if (ercd != E_OK)
+    {
+      return(OS_ERROR);
+    }
+
+    return(OS_SUCCESS);
 
 }/* end OS_TaskDelay */
 /*---------------------------------------------------------------------------------------
