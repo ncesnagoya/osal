@@ -69,8 +69,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <errno.h> /* checking ETIMEDOUT */
-#include <rtems.h>
-#include <rtems/malloc.h>
+#include "kernel.h" /* TOPPERS */
 
 /*
 ** User defined include files
@@ -95,30 +94,6 @@ uint32  OS_FindCreator(void);
 #define UNINITIALIZED               0 
 
 
-/*
-** Define all of the RTEMS semaphore attributes
-** 1. The TABLE_MUTEX attributes are for the internal OSAL tables.
-**    In RTEMS, a MUTEX is defined as a binary semaphore 
-**    It allows nested locks, priority wait order, and supports priority inheritance
-**
-** 2. OSAL Mutex attributes -- same as 1
-**
-** 3. OSAL Binary Semaphore attributes 
-**    This is a simple binary semaphore used for syncronization. It does not 
-**    allow nested calls ( nor should it ) It should not be used for mutual exclusion.
-**
-** 4. OSAL Counting Semaphore attributes
-**     This is a counting semaphore with priority wait order.
-**
-*/
-#define OSAL_TABLE_MUTEX_ATTRIBS (RTEMS_PRIORITY | RTEMS_BINARY_SEMAPHORE | RTEMS_INHERIT_PRIORITY)
-
-#define OSAL_MUTEX_ATTRIBS (RTEMS_PRIORITY | RTEMS_BINARY_SEMAPHORE | RTEMS_INHERIT_PRIORITY)
-
-#define OSAL_BINARY_SEM_ATTRIBS (RTEMS_SIMPLE_BINARY_SEMAPHORE | RTEMS_PRIORITY) 
-
-#define OSAL_COUNT_SEM_ATTRIBS (RTEMS_PRIORITY) 
-
 
 /****************************************************************************************
                                    GLOBAL DATA
@@ -129,7 +104,7 @@ uint32  OS_FindCreator(void);
 typedef struct
 {
     int      free;
-    rtems_id id;
+    ID       id;
     char     name [OS_MAX_API_NAME];
     int      creator;
     uint32   stack_size;
@@ -142,7 +117,7 @@ typedef struct
 typedef struct
 {
     int      free;
-    rtems_id id;
+    ID       id;
     uint32   max_size;
     char     name [OS_MAX_API_NAME];
     int      creator;
@@ -152,7 +127,7 @@ typedef struct
 typedef struct
 {
     int      free;
-    rtems_id id;
+    ID       id;
     char     name [OS_MAX_API_NAME];
     int      creator;    
 }OS_bin_sem_record_t;
@@ -161,7 +136,7 @@ typedef struct
 typedef struct
 {
     int      free;
-    rtems_id id;
+    ID       id;
     char     name [OS_MAX_API_NAME];
     int      creator;
 }OS_count_sem_record_t;
@@ -170,7 +145,7 @@ typedef struct
 typedef struct
 {
     int             free;
-    rtems_id        id;
+    ID              id;
     char            name [OS_MAX_API_NAME];
     int             creator;
 }OS_mut_sem_record_t;
@@ -187,11 +162,11 @@ OS_bin_sem_record_t OS_bin_sem_table       [OS_MAX_BIN_SEMAPHORES];
 OS_count_sem_record_t OS_count_sem_table   [OS_MAX_COUNT_SEMAPHORES];
 OS_mut_sem_record_t OS_mut_sem_table       [OS_MAX_MUTEXES];
 
-rtems_id            OS_task_table_sem;
-rtems_id            OS_queue_table_sem;
-rtems_id            OS_bin_sem_table_sem;
-rtems_id            OS_mut_sem_table_sem;
-rtems_id            OS_count_sem_table_sem;
+ID            OS_task_table_sem;
+ID            OS_queue_table_sem;
+ID            OS_bin_sem_table_sem;
+ID            OS_mut_sem_table_sem;
+ID            OS_count_sem_table_sem;
 
 uint32              OS_printf_enabled = TRUE;
 
@@ -211,7 +186,6 @@ int32 OS_API_Init(void)
 {
     int               i;
     int32             return_code = OS_SUCCESS;
-    rtems_status_code rtems_sc;
 
     /* Initialize Task Table */
     for(i = 0; i < OS_MAX_TASKS; i++)
@@ -282,50 +256,23 @@ int32 OS_API_Init(void)
    /*
    ** Initialize the internal table Mutexes
    */
-   rtems_sc = rtems_semaphore_create (rtems_build_name ('M', 'U', 'T', '1'),
-                                      1, OSAL_TABLE_MUTEX_ATTRIBS, 0,
-                                      &OS_task_table_sem);
-   if ( rtems_sc != RTEMS_SUCCESSFUL )
-   {
-      return_code = OS_ERROR;
-      return(return_code);
-   }
+#if 0 
+/* 内部で使用するミューテックスは以下の静的APIを用いて事前に生成する */
+KERNEL_DOMAIN {
+   CRE_MTX(OSAL_TASK_TABLE_MTX, {TA_CEILING, TMIN_TPRI});
+   CRE_MTX(OSAL_QUEUE_TABLE_MTX, {TA_CEILING, TMIN_TPRI});
+   CRE_MTX(OSAL_BIN_SEM_TABLE_MTX, {TA_CEILING, TMIN_TPRI});
+   CRE_MTX(OSAL_MUT_SEM_TABLE_MTX, {TA_CEILING, TMIN_TPRI});
+   CRE_MTX(OSAL_COUNT_SEM_TABLE_MTX, {TA_CEILING, TMIN_TPRI});
+}
+   
+   OS_task_table_sem      = OSAL_TASK_TABLE_MTX;
+   OS_queue_table_sem     = OSAL_QUEUE_TABLE_MTX;
+   OS_bin_sem_table_sem   = OSAL_BIN_SEM_TABLE_MTX;
+   OS_mut_sem_table_sem   = OSAL_MUT_SEM_TABLE_MTX;
+   OS_count_sem_table_sem = OSAL_COUNT_SEM_TABLE_MTX;
 
-   rtems_sc = rtems_semaphore_create (rtems_build_name ('M', 'U', 'T', '2'),
-                                      1, OSAL_TABLE_MUTEX_ATTRIBS, 0,
-                                      &OS_queue_table_sem);
-   if ( rtems_sc != RTEMS_SUCCESSFUL )
-   {
-      return_code = OS_ERROR;
-      return(return_code);
-   }
-
-   rtems_sc = rtems_semaphore_create (rtems_build_name ('M', 'U', 'T', '3'),
-                                      1, OSAL_TABLE_MUTEX_ATTRIBS, 0,
-                                      &OS_bin_sem_table_sem);
-   if ( rtems_sc != RTEMS_SUCCESSFUL )
-   {
-      return_code = OS_ERROR;
-      return(return_code);
-   }
-
-   rtems_sc = rtems_semaphore_create (rtems_build_name ('M', 'U', 'T', '4'),
-                                      1, OSAL_TABLE_MUTEX_ATTRIBS, 0,
-                                      &OS_count_sem_table_sem);
-   if ( rtems_sc != RTEMS_SUCCESSFUL )
-   {
-      return_code = OS_ERROR;
-      return(return_code);
-   }
- 
-   rtems_sc = rtems_semaphore_create (rtems_build_name ('M', 'U', 'T', '5'),
-                                      1, OSAL_TABLE_MUTEX_ATTRIBS, 0,
-                                      &OS_mut_sem_table_sem);
-   if ( rtems_sc != RTEMS_SUCCESSFUL )
-   {
-      return_code = OS_ERROR;
-      return(return_code);
-   }
+#endif
 
    /*
    ** File system init
