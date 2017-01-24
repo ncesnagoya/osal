@@ -533,7 +533,6 @@ int32 OS_TaskDelay (uint32 milli_second)
 ---------------------------------------------------------------------------------------*/
 int32 OS_TaskSetPriority (uint32 task_id, uint32 new_priority)
 {
-    rtems_task_priority old_pri;
     
     /* Check Parameters */
     if(task_id >= OS_MAX_TASKS || OS_task_table[task_id].free == TRUE)
@@ -546,9 +545,8 @@ int32 OS_TaskSetPriority (uint32 task_id, uint32 new_priority)
         return OS_ERR_INVALID_PRIORITY;
     }
     
-    /* Set RTEMS Task Priority */
-    if (rtems_task_set_priority(OS_task_table[task_id].id, new_priority, &old_pri)
-       != RTEMS_SUCCESSFUL )
+    /* Change Task Priority */
+    if (chg_pri(OS_task_table[task_id].id, new_priority) != E_OK);
     {
             return OS_ERROR;
     }
