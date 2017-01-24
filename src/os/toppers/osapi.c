@@ -569,47 +569,7 @@ int32 OS_TaskSetPriority (uint32 task_id, uint32 new_priority)
 ---------------------------------------------------------------------------------------*/
 
 int32 OS_TaskRegister (void)
-{
-   rtems_id          rtems_task_id;
-   rtems_status_code rtems_status;
-   int 	              i;
-   uint32	      task_id;
-	
-   /* 
-   ** Get RTEMS Task Id
-   */
-   rtems_status = rtems_task_ident(RTEMS_SELF, 0, &rtems_task_id);
-   if ( rtems_status != RTEMS_SUCCESSFUL )
-   {		
-      return(OS_ERROR);
-   }
-	
-    for(i = 0; i < OS_MAX_TASKS; i++)
-    {
-        if(OS_task_table[i].id == rtems_task_id)
-            break;
-    }
-
-    task_id = i;
-
-    if(task_id >= OS_MAX_TASKS)
-    {
-        return OS_ERR_INVALID_ID;
-    }
-
-    /* Add RTEMS Task Variable */
-    rtems_status = rtems_task_variable_add(
-		rtems_task_id,        /* rtems task id */
-		(void *)&OS_task_key, /* the task variable of type: void *task_variable */
-		NULL);                /* no function destructure is specified */
-	
-    if ( rtems_status != RTEMS_SUCCESSFUL )
-    {
-	return(OS_ERROR);
-    }
-    
-    OS_task_key = (void *)task_id;
-    
+{    
     return OS_SUCCESS;
 
 }/* end OS_TaskRegister */
@@ -684,7 +644,6 @@ int32 OS_TaskGetIdByName (uint32 *task_id, const char *task_name)
 ---------------------------------------------------------------------------------------*/
 int32 OS_TaskGetInfo (uint32 task_id, OS_task_prop_t *task_prop)  
 {
-    rtems_status_code status;
 
     /* Check to see that the id given is valid */
     if (task_id >= OS_MAX_TASKS || OS_task_table[task_id].free == TRUE)
@@ -698,12 +657,12 @@ int32 OS_TaskGetInfo (uint32 task_id, OS_task_prop_t *task_prop)
     }
 
     /* put the info into the stucture */
-    status = rtems_semaphore_obtain (OS_task_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_task_table_sem);
     task_prop -> creator =    OS_task_table[task_id].creator;
     task_prop -> stack_size = OS_task_table[task_id].stack_size;
     task_prop -> priority =   OS_task_table[task_id].priority;
     task_prop -> OStask_id =  (uint32) OS_task_table[task_id].id;
-    status = rtems_semaphore_release (OS_task_table_sem);    
+    unl_mtx(OS_task_table_sem);
     
     strcpy(task_prop-> name, OS_task_table[task_id].name);
     
@@ -718,10 +677,9 @@ int32 OS_TaskGetInfo (uint32 task_id, OS_task_prop_t *task_prop)
 
     returns: status
 ---------------------------------------------------------------------------------------*/
-int32 OS_TaskInstallDeleteHandler(void *function_pointer)
+int32 OS_TaskInstallDeleteHandler(osal_task_entry function_pointer)
 {
     uint32            task_id;
-    rtems_status_code status;
 
     task_id = OS_TaskGetId();
 
@@ -730,14 +688,14 @@ int32 OS_TaskInstallDeleteHandler(void *function_pointer)
        return(OS_ERR_INVALID_ID);
     }
 
-    status = rtems_semaphore_obtain (OS_task_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_task_table_sem);
 
     if ( OS_task_table[task_id].free != FALSE )
     {
        /* 
        ** Somehow the calling task is not registered 
        */
-       status = rtems_semaphore_release (OS_task_table_sem);
+       unl_mtx(OS_task_table_sem);
        return(OS_ERR_INVALID_ID);
     }
 
@@ -746,7 +704,7 @@ int32 OS_TaskInstallDeleteHandler(void *function_pointer)
     */
     OS_task_table[task_id].delete_hook_pointer = function_pointer;    
     
-    status = rtems_semaphore_release (OS_task_table_sem);
+    loc_mtx(OS_task_table_sem);
 
     return(OS_SUCCESS);
     
