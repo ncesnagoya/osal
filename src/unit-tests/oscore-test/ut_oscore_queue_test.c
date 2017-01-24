@@ -137,12 +137,12 @@ UT_os_sample_test_exit_tag:
 **--------------------------------------------------------------------------------*/
 void UT_os_queue_create_test()
 {
-    int i,j;
+    int i = 0;
     UT_OsApiInfo_t apiInfo;
     int32 res = 0, idx = 0;
     const char* testDesc = NULL;
-    uint32  queue_id;
-    uint32  queue_id2;
+    uint32  queue_id = 0;
+    uint32  queue_id2 = 0;
     char    queue_name[OS_MAX_API_NAME];
     char    long_queue_name[OS_MAX_API_NAME+5];
     uint32  test_setup_invalid = 0;
@@ -218,10 +218,7 @@ void UT_os_queue_create_test()
     }
 
     /* Reset test environment */
-    for ( i = 0; i< OS_MAX_QUEUES; i++ )
-    {
-        res = OS_QueueDelete(i); /* Ignore errors, does not matter here */
-    }
+    OS_DeleteAllObjects();
 
     /*-----------------------------------------------------*/
     testDesc = "#5 Duplicate-name";
@@ -544,7 +541,7 @@ void UT_os_queue_put_test()
     int32              res = 0, idx = 0;
     const char*        testDesc = NULL;
     uint32             queue_id;
-    uint32             queue_data_out;
+    uint32             queue_data_out = 0;
     int                i;
 
     UT_OS_CLEAR_API_INFO_MACRO(apiInfo, idx)
