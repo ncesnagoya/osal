@@ -1316,6 +1316,7 @@ int32 OS_BinSemFlush (uint32 sem_id)
             break;
         }
     }
+    return ercd;
 
 }/* end OS_BinSemFlush */
 
