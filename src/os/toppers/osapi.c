@@ -83,7 +83,6 @@
 /*
 ** Function Prototypes
 */
-int     malloc_info ( Heap_Information_block *the_info); /* This is not in an RTEMS header */
 uint32  OS_FindCreator(void);
 /****************************************************************************************
                                      DEFINES
@@ -2364,26 +2363,14 @@ int32 OS_IntDisable (int32 Level)
 ---------------------------------------------------------------------------------------*/
 int32 OS_HeapGetInfo       (OS_heap_prop_t *heap_prop)
 {
-    region_information_block info;
-    int                      status;
-
     if (heap_prop == NULL)
     {
         return OS_INVALID_POINTER;
     }
-
-    status = malloc_info( &info );
-
-    if ( status != 0 )
-    {
-       return(OS_ERROR);
-    }
-
-    heap_prop->free_bytes         = (uint32) info.Free.total;
-    heap_prop->free_blocks        = (uint32) info.Free.number;
-    heap_prop->largest_free_block = (uint32) info.Free.largest;
- 
-    return (OS_SUCCESS);
+    /*
+    ** Not implemented yet
+    */
+    return (OS_ERR_NOT_IMPLEMENTED);
 }
 
 /*---------------------------------------------------------------------------------------
@@ -2529,7 +2516,7 @@ void OS_printf_enable(void)
 int32 OS_FPUExcSetMask(uint32 mask)
 {
     /*
-    ** Not implemented in RTEMS.
+    ** Not implemented in TOPPERS/HRP.
     */
     return(OS_SUCCESS);
 }
@@ -2546,7 +2533,7 @@ int32 OS_FPUExcSetMask(uint32 mask)
 int32 OS_FPUExcGetMask(uint32 *mask)
 {
     /*
-    ** Not implemented in RTEMS.
+    ** Not implemented in TOPPERS/HRP.
     */
     return(OS_SUCCESS);
 }
