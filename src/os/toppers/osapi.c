@@ -1894,8 +1894,8 @@ int32 OS_MutSemCreate (uint32 *sem_id, const char *sem_name, uint32 options)
 {
     uint32	        possible_semid;
     uint32	        i;	    
-    rtems_status_code   status; 
-    rtems_name          r_name;
+    ER              status; 
+    T_CMTX          cmtx;
 
     /* Check Parameters */
     if (sem_id == NULL || sem_name == NULL)
@@ -1912,7 +1912,7 @@ int32 OS_MutSemCreate (uint32 *sem_id, const char *sem_name, uint32 options)
         return OS_ERR_NAME_TOO_LONG;
     }
 
-    status = rtems_semaphore_obtain (OS_mut_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_mut_sem_table_sem);
 
     for (possible_semid = 0; possible_semid < OS_MAX_MUTEXES; possible_semid++)
     {
@@ -1923,7 +1923,7 @@ int32 OS_MutSemCreate (uint32 *sem_id, const char *sem_name, uint32 options)
     if( (possible_semid >= OS_MAX_MUTEXES) ||
         (OS_mut_sem_table[possible_semid].free != TRUE) )
     {
-        status = rtems_semaphore_release (OS_mut_sem_table_sem);
+        unl_mtx(OS_mut_sem_table_sem);
         return OS_ERR_NO_FREE_IDS;
     }
     
@@ -1933,37 +1933,37 @@ int32 OS_MutSemCreate (uint32 *sem_id, const char *sem_name, uint32 options)
         if ((OS_mut_sem_table[i].free == FALSE) &&
                 strcmp ((char*)sem_name, OS_mut_sem_table[i].name) == 0)
         {
-            status = rtems_semaphore_release (OS_mut_sem_table_sem);
+            unl_mtx(OS_mut_sem_table_sem);
             return OS_ERR_NAME_TAKEN;
         }
     }
     
     OS_mut_sem_table[possible_semid].free = FALSE;
-    status = rtems_semaphore_release (OS_mut_sem_table_sem);
+    unl_mtx(OS_mut_sem_table_sem);
 
     /*
     ** Try to create the mutex
     */
-    r_name = rtems_build_name(sem_name[0],sem_name[1],sem_name[2],sem_name[3]);
-    status = rtems_semaphore_create ( r_name, 1,  
-                                      OSAL_MUTEX_ATTRIBS ,
-                                      0,
-                                      &OS_mut_sem_table[possible_semid].id );
-    if ( status != RTEMS_SUCCESSFUL )
+    cmtx.mtxatr = TA_CEILING;
+    cmtx.ceilpri = TMIN_TPRI;
+
+    status = acre_mtx(&cmtx);
+    if ( status != E_OK )
     {
-        status = rtems_semaphore_obtain (OS_mut_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+        loc_mtx(OS_mut_sem_table_sem);
         OS_mut_sem_table[possible_semid].free = TRUE;
-        status = rtems_semaphore_release (OS_mut_sem_table_sem);
+        unl_mtx(OS_mut_sem_table_sem);
         return OS_SEM_FAILURE;
     } 
 
     *sem_id = possible_semid;
 
-    status = rtems_semaphore_obtain (OS_mut_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_mut_sem_table_sem);
+    OS_mut_sem_table[*sem_id].id = status;
     strcpy(OS_mut_sem_table[*sem_id].name, (char*)sem_name);
     OS_mut_sem_table[*sem_id].free = FALSE;
     OS_mut_sem_table[*sem_id].creator = OS_FindCreator();
-    status = rtems_semaphore_release (OS_mut_sem_table_sem);
+    unl_mtx(OS_mut_sem_table_sem);
     
     return OS_SUCCESS;
 
@@ -1982,7 +1982,6 @@ int32 OS_MutSemCreate (uint32 *sem_id, const char *sem_name, uint32 options)
 
 int32 OS_MutSemDelete (uint32 sem_id)
 {
-    rtems_status_code status; 
 
     /* Check to see if this sem_id is valid   */
     if (sem_id >= OS_MAX_MUTEXES || OS_mut_sem_table[sem_id].free == TRUE)
@@ -1990,20 +1989,20 @@ int32 OS_MutSemDelete (uint32 sem_id)
         return OS_ERR_INVALID_ID;
     }
 
-    if (rtems_semaphore_delete( OS_mut_sem_table[sem_id].id) != RTEMS_SUCCESSFUL)
+    if (del_mtx( OS_mut_sem_table[sem_id].id) != E_OK)
     {
         /* clean up? */
         return OS_SEM_FAILURE;
     }
 
     /* Delete its presence in the table */
-    status = rtems_semaphore_obtain (OS_mut_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_mut_sem_table_sem);
 
     OS_mut_sem_table[sem_id].free = TRUE;
     OS_mut_sem_table[sem_id].id = UNINITIALIZED;
     OS_mut_sem_table[sem_id].name[0] = '\0';
     OS_mut_sem_table[sem_id].creator = UNINITIALIZED;
-    status = rtems_semaphore_release (OS_mut_sem_table_sem);
+    unl_mtx(OS_mut_sem_table_sem);
 
     return OS_SUCCESS;
 
@@ -2035,7 +2034,7 @@ int32 OS_MutSemGive (uint32 sem_id)
     }
 
     /* Give the mutex */
-    if( rtems_semaphore_release(OS_mut_sem_table[sem_id].id) != RTEMS_SUCCESSFUL)
+    if( unl_mtx(OS_mut_sem_table[sem_id].id) != E_OK)
     {
         return OS_SEM_FAILURE ;
     }
@@ -2070,8 +2069,7 @@ int32 OS_MutSemTake (uint32 sem_id)
       return OS_ERR_INVALID_ID;
    }
 
-   if ( rtems_semaphore_obtain(OS_mut_sem_table[sem_id].id, RTEMS_WAIT,
-                                RTEMS_NO_TIMEOUT)!= RTEMS_SUCCESSFUL)
+   if ( loc_mtx(OS_mut_sem_table[sem_id].id)!= E_OK)
    {
        return OS_SEM_FAILURE;
    }
@@ -2141,7 +2139,6 @@ int32 OS_MutSemGetIdByName (uint32 *sem_id, const char *sem_name)
 
 int32 OS_MutSemGetInfo (uint32 sem_id, OS_mut_sem_prop_t *mut_prop)  
 {
-    rtems_status_code status; 
     
     /* Check to see that the id given is valid */
     if (sem_id >= OS_MAX_MUTEXES || OS_mut_sem_table[sem_id].free == TRUE)
@@ -2155,10 +2152,10 @@ int32 OS_MutSemGetInfo (uint32 sem_id, OS_mut_sem_prop_t *mut_prop)
     }
     
     /* put the info into the stucture */    
-    status = rtems_semaphore_obtain (OS_mut_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_mut_sem_table_sem);
     mut_prop -> creator =   OS_mut_sem_table[sem_id].creator;
     strcpy(mut_prop-> name, OS_mut_sem_table[sem_id].name);
-    status = rtems_semaphore_release (OS_mut_sem_table_sem);
+    unl_mtx(OS_mut_sem_table_sem);
 
     return OS_SUCCESS;
     
