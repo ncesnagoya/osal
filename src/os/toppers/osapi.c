@@ -2261,28 +2261,22 @@ int32 OS_SetLocalTime(OS_time_t *time_struct)
 ---------------------------------------------------------------------------------------*/
 int32 OS_IntAttachHandler  (uint32 InterruptNumber, osal_task_entry InterruptHandler, int32 parameter)
 {
-   rtems_status_code ret_status;
+   ER ret_status;
    uint32 status ;
-   rtems_isr_entry old_handler;
+   T_CISR     cisr;
 	
-   ret_status = rtems_interrupt_catch( 
-		(rtems_isr_entry)InterruptHandler,
-		(rtems_vector_number)InterruptNumber,
-		&old_handler);
+  cisr.isratr = TA_ENAINT;
+  cisr.exinf = parameter;
+  cisr.intno = InterruptNumber;
+  cisr.isr = (ISR)InterruptHandler;
+  cisr.isrpri = TMIN_ISRPRI;
 
+   ret_status = acre_isr(&cisr);
    switch (ret_status) 
    {
-       case RTEMS_SUCCESSFUL :
+       case E_OK :
           status = OS_SUCCESS;
 	  break ;
-		
-       case RTEMS_INVALID_NUMBER :
-          status = OS_INVALID_INT_NUM;
-          break ;
-		
-       case RTEMS_INVALID_ADDRESS :
-          status = OS_INVALID_POINTER;
-          break ;
 		
     default :
           status = OS_ERROR;
@@ -2302,9 +2296,7 @@ int32 OS_IntAttachHandler  (uint32 InterruptNumber, osal_task_entry InterruptHan
 
 int32 OS_IntUnlock (int32 IntLevel)
 {
-    rtems_interrupt_enable ( (rtems_interrupt_level) IntLevel); 
-    return (OS_SUCCESS);
-
+    return( unl_cpu() );
 }/* end OS_IntUnlock */
 
 /*---------------------------------------------------------------------------------------
@@ -2319,11 +2311,7 @@ int32 OS_IntUnlock (int32 IntLevel)
 
 int32 OS_IntLock (void)
 {
-   rtems_interrupt_level rtems_int_level;
-
-   rtems_interrupt_disable(rtems_int_level) ; 
-   return ( (int32) rtems_int_level) ;
-
+    return( loc_cpu() ) ;
 }/* end OS_IntLock */
 
 
@@ -2338,8 +2326,11 @@ int32 OS_IntLock (void)
 
 int32 OS_IntEnable (int32 Level)
 {
-    rtems_interrupt_enable ( (rtems_interrupt_level) Level); 
-    return(OS_SUCCESS);
+  if(ena_int(Level) != E_OK)
+  {
+    return(OS_ERROR);
+  }
+  return(OS_SUCCESS);
 }/* end OS_IntEnable */
 
 /*---------------------------------------------------------------------------------------
@@ -2354,10 +2345,11 @@ int32 OS_IntEnable (int32 Level)
 
 int32 OS_IntDisable (int32 Level)
 {
-   rtems_interrupt_level rtems_int_level;
-
-   rtems_interrupt_disable(rtems_int_level) ; 
-   return ( (int32) rtems_int_level) ;
+  if(dis_int(Level) != E_OK)
+  {
+    return(OS_ERROR);
+  }
+  return(OS_SUCCESS);
 }/* end OS_IntDisable */
 
 /*---------------------------------------------------------------------------------------
