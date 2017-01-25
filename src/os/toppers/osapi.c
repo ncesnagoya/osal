@@ -1513,10 +1513,10 @@ int32 OS_BinSemGetInfo (uint32 sem_id, OS_bin_sem_prop_t *bin_prop)
 int32 OS_CountSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initial_value, 
                         uint32 options)
 {
-    rtems_status_code status;
+    ER                status;
     uint32            possible_semid;
-    rtems_name        r_name;
     uint32            i;
+    T_CSEM            csem;
 
     /* 
     ** Check Parameters 
@@ -1546,7 +1546,7 @@ int32 OS_CountSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initia
     /*
     ** Lock
     */ 
-    status = rtems_semaphore_obtain (OS_count_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_count_sem_table_sem);
 
     for (possible_semid = 0; possible_semid < OS_MAX_COUNT_SEMAPHORES; possible_semid++)
     {
@@ -1557,7 +1557,7 @@ int32 OS_CountSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initia
     if((possible_semid >= OS_MAX_COUNT_SEMAPHORES) ||  
        (OS_count_sem_table[possible_semid].free != TRUE))
     {
-        status = rtems_semaphore_release (OS_count_sem_table_sem);
+        unl_mtx(OS_count_sem_table_sem);
         return OS_ERR_NO_FREE_IDS;
     }
     
@@ -1567,26 +1567,26 @@ int32 OS_CountSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initia
         if ((OS_count_sem_table[i].free == FALSE) &&
              strcmp ((char*) sem_name, OS_count_sem_table[i].name) == 0)
         {
-            status = rtems_semaphore_release (OS_count_sem_table_sem);
+            unl_mtx(OS_count_sem_table_sem);
             return OS_ERR_NAME_TAKEN;
         }
     }
     OS_count_sem_table[possible_semid].free = FALSE;
-    status = rtems_semaphore_release (OS_count_sem_table_sem);
+    unl_mtx(OS_count_sem_table_sem);
 
     /* Create RTEMS Semaphore */
-    r_name = rtems_build_name(sem_name[0],sem_name[1],sem_name[2],sem_name[3]);
-    status = rtems_semaphore_create( r_name, sem_initial_value, 
-                                     OSAL_COUNT_SEM_ATTRIBS,
-                                     0,
-                                     &(OS_count_sem_table[possible_semid].id));
-    
+    csem.sematr = TA_NULL;
+    csem.isemcnt = 0;
+    csem.maxsem = TMAX_MAXSEM;
+
+    status = acre_sem(&csem);
+
     /* check if Create failed */
-    if ( status != RTEMS_SUCCESSFUL )
+    if ( status != E_OK )
     {        
-        status = rtems_semaphore_obtain (OS_count_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+        loc_mtx(OS_count_sem_table_sem);
         OS_count_sem_table[possible_semid].free = TRUE;
-        status = rtems_semaphore_release (OS_count_sem_table_sem);
+        unl_mtx(OS_count_sem_table_sem);
 
 	return OS_SEM_FAILURE;
     }
@@ -1595,7 +1595,8 @@ int32 OS_CountSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initia
 
     *sem_id = possible_semid;
     
-    status = rtems_semaphore_obtain (OS_count_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_count_sem_table_sem);
+    OS_count_sem_table[*sem_id].id = status;
     OS_count_sem_table[*sem_id].free = FALSE;
     strcpy(OS_count_sem_table[*sem_id].name , (char*) sem_name);
     OS_count_sem_table[*sem_id].creator = OS_FindCreator();
@@ -1603,7 +1604,7 @@ int32 OS_CountSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initia
     /*
     ** Unlock
     */ 
-    status = rtems_semaphore_release (OS_count_sem_table_sem);
+    unl_mtx(OS_count_sem_table_sem);
     
     return OS_SUCCESS;
     
@@ -1622,7 +1623,6 @@ int32 OS_CountSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initia
 
 int32 OS_CountSemDelete (uint32 sem_id)
 {
-    rtems_status_code status;
 
     /* 
     ** Check to see if this sem_id is valid 
@@ -1633,22 +1633,22 @@ int32 OS_CountSemDelete (uint32 sem_id)
     }
 
     /* we must make sure the semaphore is given  to delete it */
-    rtems_semaphore_release(OS_count_sem_table[sem_id].id);
+    sig_sem(OS_count_sem_table[sem_id].id);
     
-    if (rtems_semaphore_delete( OS_count_sem_table[sem_id].id) != RTEMS_SUCCESSFUL) 
+    if (del_sem( OS_count_sem_table[sem_id].id) != E_OK) 
     {
 	return OS_SEM_FAILURE;
     }
     
     /* Remove the Id from the table, and its name, so that it cannot be found again */
-    status = rtems_semaphore_obtain (OS_count_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_count_sem_table_sem);
 
     OS_count_sem_table[sem_id].free = TRUE;
     OS_count_sem_table[sem_id].name[0] = '\0';
     OS_count_sem_table[sem_id].creator = UNINITIALIZED;
     OS_count_sem_table[sem_id].id = UNINITIALIZED;
     
-    status = rtems_semaphore_release (OS_count_sem_table_sem);
+    unl_mtx(OS_count_sem_table_sem);
 
     return OS_SUCCESS;
 
@@ -1683,7 +1683,7 @@ int32 OS_CountSemGive (uint32 sem_id)
        return OS_ERR_INVALID_ID;
     }
 
-    if( rtems_semaphore_release(OS_count_sem_table[sem_id].id) != RTEMS_SUCCESSFUL)
+    if( sig_sem(OS_count_sem_table[sem_id].id) != E_OK)
     {
         return_code = OS_SEM_FAILURE ;
     }
@@ -1722,8 +1722,7 @@ int32 OS_CountSemTake (uint32 sem_id)
         return OS_ERR_INVALID_ID;
     }
 
-    if ( rtems_semaphore_obtain(OS_count_sem_table[sem_id].id, RTEMS_WAIT, 
-                                RTEMS_NO_TIMEOUT)!= RTEMS_SUCCESSFUL)
+    if ( wai_sem(OS_count_sem_table[sem_id].id) != E_OK )
     {
         return_code =  OS_SEM_FAILURE;
     }
@@ -1749,9 +1748,8 @@ int32 OS_CountSemTake (uint32 sem_id)
 
 int32 OS_CountSemTimedWait (uint32 sem_id, uint32 msecs)
 {
-    rtems_status_code status;
+    ER                status;
     int32             return_code = OS_SUCCESS;
-    uint32            TimeInTicks;
 
     /* Check Parameters */
     if( (sem_id >= OS_MAX_COUNT_SEMAPHORES) || (OS_count_sem_table[sem_id].free == TRUE) )
@@ -1759,16 +1757,14 @@ int32 OS_CountSemTimedWait (uint32 sem_id, uint32 msecs)
         return OS_ERR_INVALID_ID;	
     }
 		
-    TimeInTicks = OS_Milli2Ticks(msecs);
-    
-    status = rtems_semaphore_obtain(OS_count_sem_table[sem_id].id, RTEMS_WAIT,TimeInTicks ) ;
+    status = twai_sem(OS_count_sem_table[sem_id].id, msecs ) ;
     switch (status)
     {
-        case RTEMS_TIMEOUT :
+        case E_TMOUT :
 	   return_code = OS_SEM_TIMEOUT ;
            break ;
 		
-        case RTEMS_SUCCESSFUL :
+        case E_OK :
            return_code = OS_SUCCESS ;
            break ;
 		
@@ -1841,7 +1837,6 @@ int32 OS_CountSemGetIdByName (uint32 *sem_id, const char *sem_name)
 
 int32 OS_CountSemGetInfo (uint32 sem_id, OS_count_sem_prop_t *count_prop)  
 {
-    rtems_status_code status; 
 
     /* Check to see that the id given is valid */
     if (sem_id >= OS_MAX_COUNT_SEMAPHORES || OS_count_sem_table[sem_id].free == TRUE)
@@ -1857,7 +1852,7 @@ int32 OS_CountSemGetInfo (uint32 sem_id, OS_count_sem_prop_t *count_prop)
     /*
     ** Lock
     */ 
-    status = rtems_semaphore_obtain (OS_count_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_count_sem_table_sem);
     
     /* 
     ** Populate the info stucture 
@@ -1869,7 +1864,7 @@ int32 OS_CountSemGetInfo (uint32 sem_id, OS_count_sem_prop_t *count_prop)
     /*
     ** Unlock 
     */ 
-    status = rtems_semaphore_release (OS_count_sem_table_sem);
+    unl_mtx(OS_count_sem_table_sem);
 
     return OS_SUCCESS;
     
