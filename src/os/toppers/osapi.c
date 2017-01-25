@@ -170,6 +170,7 @@ ID            OS_mut_sem_table_sem;
 ID            OS_count_sem_table_sem;
 
 uint32              OS_printf_enabled = TRUE;
+uint32         OS_systim_offset = 0U;
 
 /****************************************************************************************
                                 INITIALIZATION FUNCTION
@@ -2213,7 +2214,7 @@ int32 OS_GetLocalTime(OS_time_t *time_struct)
    }
    
    ercd = get_tim(&time);
-   if (ercd == E_OK)
+   if (ercd != E_OK)
    {
         return OS_ERROR;
    }
