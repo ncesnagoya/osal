@@ -71,6 +71,8 @@
 #include <errno.h> /* checking ETIMEDOUT */
 #include "kernel.h" /* TOPPERS */
 #include "itron.h"
+#include "syssvc/serial.h"
+#include "syssvc/syslog.h"
 
 /*
 ** User defined include files
@@ -2476,26 +2478,19 @@ uint32 OS_FindCreator(void)
  ---------------------------------------------------------------------------*/
 void OS_printf( const char *String, ...)
 {
-    va_list     ptr;
-    char msg_buffer [OS_BUFFER_SIZE];
 
     /*
     ** First, check to see if this is being called from an ISR
     ** If it is, return immediately
     */
-    if ( rtems_interrupt_is_in_progress())
+    if ( sns_ctx() )
     {
        return;
     }
 
     if ( OS_printf_enabled == TRUE )    
     {
-       va_start(ptr,String);
-       vsnprintf(&msg_buffer[0], (size_t)OS_BUFFER_SIZE, String, ptr);
-       va_end(ptr);
-    
-       msg_buffer[OS_BUFFER_SIZE -1] = '\0';
-       printf("%s", &msg_buffer[0]);
+      syslog(LOG_NOTICE, "%s", String);
     }
     
 }/* end OS_printf*/

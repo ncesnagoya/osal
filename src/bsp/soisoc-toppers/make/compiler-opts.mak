@@ -14,10 +14,11 @@ WARNINGS	= -Wall
 
 FIXED_HRP2_BASE =$(OSAL_SRC)/../../../toppers/hrp2_full_extension
 
-HRP2INCDIR = $(FIXED_HRP2_BASE)/include \
-$(FIXED_HRP2_BASE)/target/soisoc_gcc \
+HRP2INCDIR = $(FIXED_HRP2_BASE) \
+$(FIXED_HRP2_BASE)/include \
 $(FIXED_HRP2_BASE)/arch \
 $(FIXED_HRP2_BASE)/arch/sh34_gcc \
+$(FIXED_HRP2_BASE)/target/soisoc_gcc \
 
 SYSINCS = $(HRP2INCDIR:%=-I%)
 
