@@ -2456,14 +2456,14 @@ int32 OS_GetErrorName(int32 error_num, os_err_name_t * err_name)
 
 uint32 OS_FindCreator(void)
 {
-    rtems_id          rtems_task_id;
+    ID          task_id;
     int i; 
     /* find the calling task ID */
-    rtems_task_ident(RTEMS_SELF, 0, &rtems_task_id);
+    get_tid(&task_id);
 
     for (i = 0; i < OS_MAX_TASKS; i++)
     {
-        if (rtems_task_id == OS_task_table[i].id)
+        if (task_id == OS_task_table[i].id)
             break;
     }
     return i;
