@@ -70,6 +70,7 @@
 #include <time.h>
 #include <errno.h> /* checking ETIMEDOUT */
 #include "kernel.h" /* TOPPERS */
+#include "itron.h"
 
 /*
 ** User defined include files
@@ -731,10 +732,10 @@ int32 OS_TaskInstallDeleteHandler(osal_task_entry function_pointer)
 int32 OS_QueueCreate (uint32 *queue_id, const char *queue_name, uint32 queue_depth, 
                        uint32 data_size, uint32 flags)
 {
-    rtems_status_code  status;
-    rtems_name         r_name;
+    ER                 status;
     uint32             possible_qid;
     uint32             i;
+    T_CDTQ             cdtq;
 
     /* Check Parameters */
     if ( queue_id == NULL || queue_name == NULL)
@@ -776,16 +777,41 @@ int32 OS_QueueCreate (uint32 *queue_id, const char *queue_name, uint32 queue_dep
 
     /* set the ID free to false to prevent other tasks from grabbing it */
     OS_queue_table[possible_qid].free = FALSE;   
-    
+    unl_mtx(OS_queue_table_sem);
+
+    /*
+    ** Create the message queue.
+    ** The queue attributes are set to default values; the waiting order
+    ** (RTEMS_FIFO or RTEMS_PRIORITY) is irrelevant since only one task waits
+    ** on each queue.
+    */
+    cdtq.dtqatr = TA_TFIFO;
+    cdtq.dtqcnt = data_size * queue_depth / 4;
+    cdtq.dtqmb = NULL;
+    status = acre_dtq(&cdtq);
+
+    /*
+    ** If the operation failed, report the error 
+    */
+    if (status != E_OK) 
+    {    
+       loc_mtx(OS_queue_table_sem);
+       OS_queue_table[possible_qid].free = TRUE;   
+       OS_queue_table[possible_qid].id = 0;
+       unl_mtx(OS_queue_table_sem);
+       return OS_ERROR;
+    }
+
     /* Set the queue_id to the id that was found available*/
     /* Set the name of the queue, and the creator as well */
     *queue_id = possible_qid;
+
+    loc_mtx(OS_queue_table_sem);
      
-    OS_queue_table[possible_qid].id = *queue_id;
+    OS_queue_table[possible_qid].id = status;
     OS_queue_table[*queue_id].max_size = data_size; 
     strcpy( OS_queue_table[*queue_id].name, (char*) queue_name);
     OS_queue_table[*queue_id].creator = OS_FindCreator();
-
     unl_mtx(OS_queue_table_sem);
 
     return OS_SUCCESS;
@@ -806,7 +832,6 @@ int32 OS_QueueCreate (uint32 *queue_id, const char *queue_name, uint32 queue_dep
 ---------------------------------------------------------------------------------------*/
 int32 OS_QueueDelete (uint32 queue_id)
 {
-    rtems_status_code status;
 
     /* Check to see if the queue_id given is valid */
     if (queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
@@ -815,23 +840,23 @@ int32 OS_QueueDelete (uint32 queue_id)
     }
 
     /* Try to delete the queue */
-    if (rtems_message_queue_delete(OS_queue_table[queue_id].id) != RTEMS_SUCCESSFUL)
+    if (del_dtq(OS_queue_table[queue_id].id) != E_OK)
     {
         return OS_ERROR;
     }
-	    
+      
     /* 
      * Now that the queue is deleted, remove its "presence"
      * in OS_queue_table
     */
-    status = rtems_semaphore_obtain (OS_queue_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_queue_table_sem);
 
     OS_queue_table[queue_id].free = TRUE;
     OS_queue_table[queue_id].name[0] = '\0';
     OS_queue_table[queue_id].creator = UNINITIALIZED;
     OS_queue_table[queue_id].id = UNINITIALIZED;
     OS_queue_table[queue_id].max_size = 0;
-    status = rtems_semaphore_release (OS_queue_table_sem);
+    unl_mtx(OS_queue_table_sem);
 
     return OS_SUCCESS;
 
@@ -853,105 +878,76 @@ int32 OS_QueueDelete (uint32 queue_id)
 int32 OS_QueueGet (uint32 queue_id, void *data, uint32 size, uint32 *size_copied, 
                     int32 timeout)
 {
-    /* msecs rounded to the closest system tick count */
-    rtems_status_code  status;
-    rtems_interval     ticks;  
-    rtems_id           rtems_queue_id;
-    
-    /* Check Parameters */
-    if(queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
-    {
-        return(OS_ERR_INVALID_ID);
-    }
-    else if( (data == NULL) || (size_copied == NULL) )
-    {
-        return (OS_INVALID_POINTER);
-    }
-    else if( size < OS_queue_table[queue_id].max_size )
-    {
-        /* 
-        ** The buffer that the user is passing in is potentially too small
-        ** RTEMS will just copy into a buffer that is too small
-        */
-        *size_copied = 0;
-        return(OS_QUEUE_INVALID_SIZE);
-    }
+  /* msecs rounded to the closest system tick count */
+  ER  status;
+  ID           toppers_queue_id;
+  
+  /* Check Parameters */
+  if(queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
+  {
+      return(OS_ERR_INVALID_ID);
+  }
+  else if( (data == NULL) || (size_copied == NULL) )
+  {
+      return (OS_INVALID_POINTER);
+  }
+  else if( size < OS_queue_table[queue_id].max_size )
+  {
+      /* 
+      ** The buffer that the user is passing in is potentially too small
+      ** RTEMS will just copy into a buffer that is too small
+      */
+      *size_copied = 0;
+      return(OS_QUEUE_INVALID_SIZE);
+  }
 
-    rtems_queue_id = OS_queue_table[queue_id].id; 
-    
-    /* Get Message From Message Queue */
-    if(timeout == OS_PEND)
-    {
-       /*
-       ** Pend forever until a message arrives.
-       */
-       status = rtems_message_queue_receive(
-		rtems_queue_id,            /* message queue descriptor */
-		data,                      /* pointer to message buffer */
-		(size_t *)size_copied,     /* returned size of message */
-		RTEMS_WAIT,                /* wait option */
-		RTEMS_NO_TIMEOUT           /* timeout */
-		);
-    }
-    else if (timeout == OS_CHECK)
-    {
-	/*
-	** Get a message without waiting.  If no message is present,
-	** return with a failure indication.
-	*/
-	status = rtems_message_queue_receive(
-   		   rtems_queue_id,            /* message queue descriptor */
-		   data,                      /* pointer to message buffer */
-		   (size_t *)size_copied,     /* returned size of message */
-		   RTEMS_NO_WAIT,             /* wait option */
-		   RTEMS_NO_TIMEOUT           /* timeout */
-		);
-		
-	if (status == RTEMS_UNSATISFIED)
-        {
-            *size_copied = 0;
-	    return OS_QUEUE_EMPTY;
-        } 
-        
-    }
-    else
-    {
-	/*
-	** Wait for up to a specified amount of time for a message to arrive.
-	** If no message arrives within the timeout interval, return with a
-	** failure indication.
-	*/
-        ticks = OS_Milli2Ticks(timeout);
-        status = rtems_message_queue_receive(
-		rtems_queue_id,              /* message queue descriptor */
-		data,                        /* pointer to message buffer */
-		(size_t *)size_copied,       /* returned size of message */
-		RTEMS_WAIT,                  /* wait option */
-		ticks                        /* timeout */
-		);
-		
-        if (status == RTEMS_TIMEOUT)
-        {
-            *size_copied = 0;
- 	    return OS_QUEUE_TIMEOUT;       
-        }
-        
-    }/* else */
-   
+  toppers_queue_id = OS_queue_table[queue_id].id; 
+  
+  /* Get Message From Message Queue */
+  if(timeout == OS_PEND)
+  {
+     /*
+     ** Pend forever until a message arrives.
+     */
+     status = trcv_dtq( toppers_queue_id, data, TMO_FEVR );
+  }
+  else if (timeout == OS_CHECK)
+  {
     /*
-    ** Check the status of the read operation.  If a valid message was
-    ** obtained, indicate success.  
+    ** Get a message without waiting.  If no message is present,
+    ** return with a failure indication.
     */
-    if (status == RTEMS_SUCCESSFUL)
-    {
-	/* Success. */
-	return OS_SUCCESS;
-    }
-    else 
-    {
-       *size_copied = 0;
-       return OS_ERROR;
-    }
+    status = trcv_dtq( toppers_queue_id, data, TMO_POL );
+  }
+  else
+  {
+  /*
+  ** Wait for up to a specified amount of time for a message to arrive.
+  ** If no message arrives within the timeout interval, return with a
+  ** failure indication.
+  */
+    status = trcv_dtq( toppers_queue_id, data, timeout );
+  }/* else */
+
+  /*
+  ** Check the status of the read operation.  If a valid message was
+  ** obtained, indicate success.  
+  */
+  if (status == E_OK)
+  {
+    /* Success. */
+    return OS_SUCCESS;
+  }
+  else if (status == E_TMOUT)
+  {
+    *size_copied = 0;
+    return OS_QUEUE_TIMEOUT;       
+  }
+  else 
+  {
+    *size_copied = 0;
+    return OS_ERROR;
+  }
    
 }/* end OS_QueueGet */
 
@@ -970,10 +966,10 @@ int32 OS_QueueGet (uint32 queue_id, void *data, uint32 size, uint32 *size_copied
             immediately return an error if the receiving message queue is full.
 ---------------------------------------------------------------------------------------*/
 
-int32 OS_QueuePut (uint32 queue_id, void *data, uint32 size, uint32 flags)
+int32 OS_QueuePut (uint32 queue_id, const void *data, uint32 size, uint32 flags)
 {
-    rtems_status_code  status;
-    rtems_id           rtems_queue_id;
+    ER  status;
+    ID           toppers_queue_id;
 
     /* Check Parameters */
     if(queue_id >= OS_MAX_QUEUES || OS_queue_table[queue_id].free == TRUE)
@@ -986,24 +982,20 @@ int32 OS_QueuePut (uint32 queue_id, void *data, uint32 size, uint32 flags)
         return OS_INVALID_POINTER;
     }
     
-    rtems_queue_id = OS_queue_table[queue_id].id; 
+    toppers_queue_id = OS_queue_table[queue_id].id; 
 
     /* Get Message From RTEMS Message Queue */
 
     /* Write the buffer pointer to the queue.  If an error occurred, report it
     ** with the corresponding SB status code.
     */
-    status = rtems_message_queue_send(
-		    rtems_queue_id,     /* message queue descriptor */
-                    data,                             /* pointer to message */
-                    size                              /* length of message */
-        	);
-   
-    if (status == RTEMS_SUCCESSFUL) 
+    status = psnd_dtq( toppers_queue_id, data );
+
+    if (status == E_OK) 
     {
 	return OS_SUCCESS;
     }
-    else if (status == RTEMS_TOO_MANY) 
+    else if (status == E_TMOUT) 
     {
 	/* 
 	** Queue is full. 
@@ -1080,7 +1072,6 @@ int32 OS_QueueGetIdByName (uint32 *queue_id, const char *queue_name)
 
 int32 OS_QueueGetInfo (uint32 queue_id, OS_queue_prop_t *queue_prop)  
 {
-    rtems_status_code status;
 
     /* Check to see that the id given is valid */
     if (queue_prop == NULL)
