@@ -1085,10 +1085,10 @@ int32 OS_QueueGetInfo (uint32 queue_id, OS_queue_prop_t *queue_prop)
     }
 
     /* put the info into the stucture */
-    status = rtems_semaphore_obtain (OS_queue_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_queue_table_sem);
     queue_prop -> creator =   OS_queue_table[queue_id].creator;
     strcpy(queue_prop -> name, OS_queue_table[queue_id].name);
-    status = rtems_semaphore_release (OS_queue_table_sem);
+    unl_mtx(OS_queue_table_sem);
 
     return OS_SUCCESS;
     
@@ -1118,10 +1118,10 @@ int32 OS_QueueGetInfo (uint32 queue_id, OS_queue_prop_t *queue_prop)
 int32 OS_BinSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initial_value, 
                         uint32 options)
 {
-    rtems_status_code status;
+    ER status;
     uint32            possible_semid;
     uint32            i;
-    rtems_name        r_name;
+    T_CSEM            csem;
 
     if (sem_id == NULL || sem_name == NULL)
     {
@@ -1136,7 +1136,7 @@ int32 OS_BinSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initial_
     }
     
     /* Check Parameters */
-    status = rtems_semaphore_obtain (OS_bin_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_bin_sem_table_sem);
 
     for (possible_semid = 0; possible_semid < OS_MAX_BIN_SEMAPHORES; possible_semid++)
     {
@@ -1147,7 +1147,7 @@ int32 OS_BinSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initial_
     if((possible_semid >= OS_MAX_BIN_SEMAPHORES) ||  
        (OS_bin_sem_table[possible_semid].free != TRUE))
     {
-        status = rtems_semaphore_release (OS_bin_sem_table_sem);
+        unl_mtx(OS_bin_sem_table_sem);
         return OS_ERR_NO_FREE_IDS;
     }
     
@@ -1157,12 +1157,12 @@ int32 OS_BinSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initial_
         if ((OS_bin_sem_table[i].free == FALSE) &&
                 strcmp ((char*) sem_name, OS_bin_sem_table[i].name) == 0)
         {
-            status = rtems_semaphore_release (OS_bin_sem_table_sem);
+            unl_mtx(OS_bin_sem_table_sem);
             return OS_ERR_NAME_TAKEN;
         }
     }
     OS_bin_sem_table[possible_semid].free = FALSE;
-    status = rtems_semaphore_release (OS_bin_sem_table_sem);
+    unl_mtx(OS_bin_sem_table_sem);
 
     /* Check to make sure the sem value is going to be either 0 or 1 */
     if (sem_initial_value > 1)
@@ -1171,19 +1171,19 @@ int32 OS_BinSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initial_
     }
     
     /* Create RTEMS Semaphore */
-    r_name = rtems_build_name(sem_name[0],sem_name[1],sem_name[2],sem_name[3]);
-    status = rtems_semaphore_create( r_name, sem_initial_value, 
-                                     OSAL_BINARY_SEM_ATTRIBS,
-                                     0,
-                                     &(OS_bin_sem_table[possible_semid].id));
-    
+    csem.sematr = TA_NULL;
+    csem.isemcnt = 1;
+    csem.maxsem = 1;
+
+    status = acre_sem(&csem);
+
     /* check if Create failed */
-    if ( status != RTEMS_SUCCESSFUL )
+    if ( status != E_OK )
     {
-        status = rtems_semaphore_obtain (OS_bin_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+        loc_mtx(OS_bin_sem_table_sem);
         OS_bin_sem_table[possible_semid].free = TRUE;
         OS_bin_sem_table[possible_semid].id = 0;
-        status = rtems_semaphore_release (OS_bin_sem_table_sem);
+        unl_mtx(OS_bin_sem_table_sem);
         return OS_SEM_FAILURE;
     }
     /* Set the sem_id to the one that we found available */
@@ -1191,11 +1191,12 @@ int32 OS_BinSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initial_
 
     *sem_id = possible_semid;
     
-    status = rtems_semaphore_obtain (OS_bin_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_bin_sem_table_sem);
+    OS_bin_sem_table[*sem_id].id = status;
     OS_bin_sem_table[*sem_id].free = FALSE;
     strcpy(OS_bin_sem_table[*sem_id].name , (char*) sem_name);
     OS_bin_sem_table[*sem_id].creator = OS_FindCreator();
-    status = rtems_semaphore_release (OS_bin_sem_table_sem);
+    unl_mtx(OS_bin_sem_table_sem);
     
     return OS_SUCCESS;
     
@@ -1215,7 +1216,6 @@ int32 OS_BinSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initial_
 
 int32 OS_BinSemDelete (uint32 sem_id)
 {
-    rtems_status_code status;
 
     /* Check to see if this sem_id is valid */
     if (sem_id >= OS_MAX_BIN_SEMAPHORES || OS_bin_sem_table[sem_id].free == TRUE)
@@ -1224,20 +1224,18 @@ int32 OS_BinSemDelete (uint32 sem_id)
     }
 
     /* we must make sure the semaphore is given  to delete it */
-    rtems_semaphore_release(OS_bin_sem_table[sem_id].id);
-    
-    if (rtems_semaphore_delete( OS_bin_sem_table[sem_id].id) != RTEMS_SUCCESSFUL) 
+    if (del_sem( OS_bin_sem_table[sem_id].id) != E_OK) 
     {
 	return OS_SEM_FAILURE;
     }
     
     /* Remove the Id from the table, and its name, so that it cannot be found again */
-    status = rtems_semaphore_obtain (OS_bin_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_bin_sem_table_sem);
     OS_bin_sem_table[sem_id].free = TRUE;
     OS_bin_sem_table[sem_id].name[0] = '\0';
     OS_bin_sem_table[sem_id].creator = UNINITIALIZED;
     OS_bin_sem_table[sem_id].id = UNINITIALIZED;
-    status = rtems_semaphore_release (OS_bin_sem_table_sem);
+    unl_mtx(OS_bin_sem_table_sem);
 
     return OS_SUCCESS;
 
@@ -1268,7 +1266,7 @@ int32 OS_BinSemGive (uint32 sem_id)
         return OS_ERR_INVALID_ID;
     }
 
-    if( rtems_semaphore_release(OS_bin_sem_table[sem_id].id) != RTEMS_SUCCESSFUL)
+    if( sig_sem(OS_bin_sem_table[sem_id].id) != E_OK)
     {
         return OS_SEM_FAILURE ;
     }
@@ -1294,6 +1292,8 @@ int32 OS_BinSemGive (uint32 sem_id)
 
 int32 OS_BinSemFlush (uint32 sem_id)
 {
+    ER    ercd;
+
     /* Check Parameters */
     if(sem_id >= OS_MAX_BIN_SEMAPHORES || OS_bin_sem_table[sem_id].free == TRUE)
     {
@@ -1301,13 +1301,19 @@ int32 OS_BinSemFlush (uint32 sem_id)
     }
 
     /* Give Semaphore */
-    if( rtems_semaphore_flush(OS_bin_sem_table[sem_id].id) != RTEMS_SUCCESSFUL)
-    {
-	return OS_SEM_FAILURE ;
-    }
-    else
-    {
-	return  OS_SUCCESS ;
+    while ( TRUE ) {
+        ercd = sig_sem( OS_bin_sem_table[sem_id].id );
+        if ( ercd == E_QOVR ) {
+            /* all semaphoes are released */
+            ercd = OS_SUCCESS;
+            break;
+        } else if ( ercd == E_OK ) {
+            /* still remain locked semaphoe */
+        } else {
+            /* unexpected error */
+            ercd = OS_SEM_FAILURE;
+            break;
+        }
     }
 
 }/* end OS_BinSemFlush */
@@ -1330,7 +1336,7 @@ int32 OS_BinSemFlush (uint32 sem_id)
 
 int32 OS_BinSemTake (uint32 sem_id)
 {
-    rtems_status_code status;
+    ER status;
 
     /* Check Parameters */
     if(sem_id >= OS_MAX_BIN_SEMAPHORES  || OS_bin_sem_table[sem_id].free == TRUE)
@@ -1338,8 +1344,8 @@ int32 OS_BinSemTake (uint32 sem_id)
         return OS_ERR_INVALID_ID;
     }
 
-    status = rtems_semaphore_obtain(OS_bin_sem_table[sem_id].id, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-    if ( status == RTEMS_SUCCESSFUL || status == RTEMS_UNSATISFIED ) 
+    status = wai_sem(OS_bin_sem_table[sem_id].id);
+    if ( status == E_OK ) 
     {
         /*
         ** If the semaphore is flushed, this function will return
@@ -1374,8 +1380,7 @@ int32 OS_BinSemTake (uint32 sem_id)
 
 int32 OS_BinSemTimedWait (uint32 sem_id, uint32 msecs)
 {
-    rtems_status_code status;
-    uint32            TimeInTicks;
+    ER status;
 
     /* Check Parameters */
     if( (sem_id >= OS_MAX_BIN_SEMAPHORES) || (OS_bin_sem_table[sem_id].free == TRUE) )
@@ -1383,18 +1388,16 @@ int32 OS_BinSemTimedWait (uint32 sem_id, uint32 msecs)
         return OS_ERR_INVALID_ID;	
     }
 		
-    TimeInTicks = OS_Milli2Ticks(msecs);
-    
-    status  = 	rtems_semaphore_obtain(OS_bin_sem_table[sem_id].id, RTEMS_WAIT,TimeInTicks ) ;
+    status  = 	twai_sem(OS_bin_sem_table[sem_id].id, msecs);
 	
     switch (status)
     {
-        case RTEMS_TIMEOUT :
+        case E_TMOUT :
             
             status = OS_SEM_TIMEOUT ;
             break ;
 		
-        case RTEMS_SUCCESSFUL :
+        case E_OK :
             status = OS_SUCCESS ;
             break ;
 
@@ -1466,7 +1469,6 @@ int32 OS_BinSemGetIdByName (uint32 *sem_id, const char *sem_name)
 
 int32 OS_BinSemGetInfo (uint32 sem_id, OS_bin_sem_prop_t *bin_prop)  
 {
-    rtems_status_code status;
 
     /* Check to see that the id given is valid */
     if (sem_id >= OS_MAX_BIN_SEMAPHORES || OS_bin_sem_table[sem_id].free == TRUE)
@@ -1480,13 +1482,13 @@ int32 OS_BinSemGetInfo (uint32 sem_id, OS_bin_sem_prop_t *bin_prop)
     }
 
     /* put the info into the stucture */
-    status = rtems_semaphore_obtain (OS_bin_sem_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_bin_sem_table_sem);
 
     bin_prop ->creator =    OS_bin_sem_table[sem_id].creator;
     strcpy(bin_prop-> name, OS_bin_sem_table[sem_id].name);
     bin_prop -> value = 0;
     
-    status = rtems_semaphore_release (OS_bin_sem_table_sem);
+    unl_mtx(OS_bin_sem_table_sem);
 
     return OS_SUCCESS;
     
