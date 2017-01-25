@@ -749,7 +749,7 @@ int32 OS_QueueCreate (uint32 *queue_id, const char *queue_name, uint32 queue_dep
        return OS_ERR_NAME_TOO_LONG;
     }
 
-    status = rtems_semaphore_obtain (OS_queue_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_queue_table_sem);
 
     for(possible_qid = 0; possible_qid < OS_MAX_QUEUES; possible_qid++)
     {
@@ -759,7 +759,7 @@ int32 OS_QueueCreate (uint32 *queue_id, const char *queue_name, uint32 queue_dep
     
     if( possible_qid >= OS_MAX_QUEUES || OS_queue_table[possible_qid].free != TRUE)
     {
-        status = rtems_semaphore_release (OS_queue_table_sem);
+        unl_mtx(OS_queue_table_sem);
         return OS_ERR_NO_FREE_IDS;
     }
 
@@ -769,52 +769,24 @@ int32 OS_QueueCreate (uint32 *queue_id, const char *queue_name, uint32 queue_dep
         if ((OS_queue_table[i].free == FALSE) &&
                 strcmp ((char*) queue_name, OS_queue_table[i].name) == 0)
         {
-            status = rtems_semaphore_release (OS_queue_table_sem);
+            unl_mtx(OS_queue_table_sem);
             return OS_ERR_NAME_TAKEN;
         }
     }
 
     /* set the ID free to false to prevent other tasks from grabbing it */
     OS_queue_table[possible_qid].free = FALSE;   
-    status = rtems_semaphore_release (OS_queue_table_sem);
-
-    /*
-    ** Create the message queue.
-    ** The queue attributes are set to default values; the waiting order
-    ** (RTEMS_FIFO or RTEMS_PRIORITY) is irrelevant since only one task waits
-    ** on each queue.
-    */
-    r_name = rtems_build_name(queue_name[0],queue_name[1],queue_name[2],queue_name[3]);
-    status = rtems_message_queue_create(
-    r_name,                        /* 32-bit RTEMS object name; not used */
-    queue_depth,                   /* maximum number of messages in queue (queue depth) */
-    data_size,                     /* maximum size in bytes of a message */
-    RTEMS_FIFO|RTEMS_LOCAL,        /* attributes (default) */
-    &(OS_queue_table[possible_qid].id)  /* object ID returned for queue */
-    );
-	
-    /*
-    ** If the operation failed, report the error 
-    */
-    if (status != RTEMS_SUCCESSFUL) 
-    {    
-       status = rtems_semaphore_obtain (OS_queue_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-       OS_queue_table[possible_qid].free = TRUE;   
-       OS_queue_table[possible_qid].id = 0;
-       status = rtems_semaphore_release (OS_queue_table_sem);
-       return OS_ERROR;
-    }
     
     /* Set the queue_id to the id that was found available*/
     /* Set the name of the queue, and the creator as well */
     *queue_id = possible_qid;
      
-    status = rtems_semaphore_obtain (OS_queue_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-
+    OS_queue_table[possible_qid].id = *queue_id;
     OS_queue_table[*queue_id].max_size = data_size; 
     strcpy( OS_queue_table[*queue_id].name, (char*) queue_name);
     OS_queue_table[*queue_id].creator = OS_FindCreator();
-    status = rtems_semaphore_release (OS_queue_table_sem);
+
+    unl_mtx(OS_queue_table_sem);
 
     return OS_SUCCESS;
 
