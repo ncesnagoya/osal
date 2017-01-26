@@ -277,9 +277,10 @@ int32 OS_TimerSet(uint32 timer_id, uint32 start_time, uint32 interval_time)
       status = acre_cyc(&ccyc);
       if ( status != E_OK )
       {
-        OS_timer_table[possible_tid].free = TRUE;
+        OS_timer_table[timer_id].free = TRUE;
         return ( OS_TIMER_ERR_INTERNAL);
       }
+      OS_timer_table[timer_id].host_timerid = status;
     }
   return OS_SUCCESS;
 }
