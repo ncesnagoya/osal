@@ -298,7 +298,7 @@ int32 OS_TimerSet(uint32 timer_id, uint32 start_time, uint32 interval_time)
 */
 int32 OS_TimerDelete(uint32 timer_id)
 {
-   rtems_status_code status;
+   ER status;
 
    /* 
    ** Check to see if the timer_id given is valid 
@@ -308,24 +308,15 @@ int32 OS_TimerDelete(uint32 timer_id)
       return OS_ERR_INVALID_ID;
    }
 
-   status = rtems_semaphore_obtain (OS_timer_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+   loc_mtx(OS_timer_table_sem);
    OS_timer_table[timer_id].free = TRUE;
-   status = rtems_semaphore_release (OS_timer_table_sem);
-
-   /*
-   ** Cancel the timer
-   */
-   status = rtems_timer_cancel(OS_timer_table[timer_id].host_timerid);
-   if ( status != RTEMS_SUCCESSFUL )
-   {
-      return ( OS_TIMER_ERR_INTERNAL);
-   }
+   unl_mtx(OS_timer_table_sem);
 
    /*
    ** Delete the timer 
    */
-   status = rtems_timer_delete(OS_timer_table[timer_id].host_timerid);
-   if ( status != RTEMS_SUCCESSFUL )
+   status = del_cyc(OS_timer_table[timer_id].host_timerid);
+   if ( status != E_OK )
    {
       return ( OS_TIMER_ERR_INTERNAL);
    }
@@ -395,7 +386,6 @@ int32 OS_TimerGetIdByName (uint32 *timer_id, const char *timer_name)
 int32 OS_TimerGetInfo (uint32 timer_id, OS_timer_prop_t *timer_prop)  
 {
    
-    rtems_status_code status;
 
     /* 
     ** Check to see that the id given is valid 
@@ -413,7 +403,7 @@ int32 OS_TimerGetInfo (uint32 timer_id, OS_timer_prop_t *timer_prop)
     /* 
     ** put the info into the stucture 
     */
-    status = rtems_semaphore_obtain (OS_timer_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    loc_mtx(OS_timer_table_sem);
 
     timer_prop ->creator       = OS_timer_table[timer_id].creator;
     strcpy(timer_prop-> name, OS_timer_table[timer_id].name);
@@ -421,7 +411,7 @@ int32 OS_TimerGetInfo (uint32 timer_id, OS_timer_prop_t *timer_prop)
     timer_prop ->interval_time = OS_timer_table[timer_id].interval_time;
     timer_prop ->accuracy      = OS_timer_table[timer_id].accuracy;
     
-    status = rtems_semaphore_release (OS_timer_table_sem);
+    unl_mtx(OS_timer_table_sem);
 
     return OS_SUCCESS;
     
