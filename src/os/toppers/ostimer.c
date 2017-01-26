@@ -35,12 +35,6 @@
 
 uint32 OS_FindCreator(void);
 
-/****************************************************************************************
-                                INTERNAL FUNCTION PROTOTYPES
-****************************************************************************************/
-
-void  OS_TicksToUsecs(rtems_interval ticks, uint32 *usecs);
-void  OS_UsecsToTicks(uint32 usecs, rtems_interval *ticks);
 
 /****************************************************************************************
                                      DEFINES
@@ -118,91 +112,6 @@ KERNEL_DOMAIN {
    
    return(return_code);
    
-}
-
-/****************************************************************************************
-                                INTERNAL FUNCTIONS
-****************************************************************************************/
-
-/*
-** Timer Signal Handler.
-** The purpose of this function is to convert the POSIX signal number to the 
-** OSAL signal number and pass it to the User defined signal handler.
-*/
-rtems_timer_service_routine OS_TimerSignalHandler(rtems_id rtems_timer_id, void *user_data)
-{
-   rtems_status_code  status;
-   uint32             osal_timer_id;
-   rtems_interval     timeout;
-      
-   osal_timer_id = ( uint32 )user_data;
-   
-   if ( osal_timer_id  < OS_MAX_TIMERS )
-   {
-      if ( OS_timer_table[osal_timer_id].free == FALSE )
-      {
-         /*
-         ** Call the user function
-         */
-         (OS_timer_table[osal_timer_id].callback_ptr)(osal_timer_id);
-        
-         /*
-         ** Only re-arm the timer if the interval time is greater than zero.
-         */ 
-         if ( OS_timer_table[osal_timer_id].interval_time > 0 )
-         {     
-            /*
-            ** Reprogram the timer with the interval time
-            */
-            OS_UsecsToTicks(OS_timer_table[osal_timer_id].interval_time, &timeout);
-   
-            status = rtems_timer_fire_after(OS_timer_table[osal_timer_id].host_timerid, 
-                                   timeout, 
-                                   OS_TimerSignalHandler, (void *)osal_timer_id );
-         }
-      }
-   }
-}
- 
-/******************************************************************************
- **  Function:  OS_UsecToTicks
- **
- **  Purpose:  Convert Microseconds to a number of ticks.
- **
- */
-void  OS_UsecsToTicks(uint32 usecs, rtems_interval *ticks)
-{
-   rtems_interval ticks_per_sec = rtems_clock_get_ticks_per_second(); 
-   uint32         usecs_per_tick;
-   
-   usecs_per_tick = (1000000)/ticks_per_sec;
-
-   if ( usecs < usecs_per_tick )
-    {
-       *ticks = 1;
-    }
-    else
-    {
-       *ticks = usecs / usecs_per_tick;
-       /* Need to round up?? */ 
-    }
-	
-}
-
-/******************************************************************************
- **  Function:  OS_TicksToUsec
- **
- **  Purpose:  Convert a number of Ticks to microseconds
- **
- */
-void  OS_TicksToUsecs(rtems_interval ticks, uint32 *usecs)
-{
-   rtems_interval ticks_per_sec = rtems_clock_get_ticks_per_second(); 
-   uint32         usecs_per_tick;
-   
-   usecs_per_tick = (1000000)/ticks_per_sec;
-
-   *usecs = ticks * usecs_per_tick;
 }
 
 
