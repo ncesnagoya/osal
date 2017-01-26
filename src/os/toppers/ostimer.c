@@ -59,7 +59,7 @@ typedef struct
    uint32              interval_time;
    uint32              accuracy;
    OS_TimerCallback_t  callback_ptr;
-   rtems_id            host_timerid;
+   ID                  host_timerid;
 
 } OS_timer_record_t;
 
@@ -73,7 +73,7 @@ uint32            os_clock_accuracy;
 /*
 ** The Mutex for protecting the above table
 */
-rtems_id          OS_timer_table_sem;
+ID          OS_timer_table_sem;
 
 /****************************************************************************************
                                 INITIALIZATION FUNCTION
