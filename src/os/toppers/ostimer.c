@@ -223,10 +223,8 @@ void  OS_TicksToUsecs(rtems_interval ticks, uint32 *usecs)
 int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name, 
                      uint32 *clock_accuracy, OS_TimerCallback_t  callback_ptr)
 {
-   ER                status;
    uint32            possible_tid;
    int32             i;
-   T_CALM            calm;
 
    if ( timer_id == NULL || timer_name == NULL || clock_accuracy == NULL )
    {
@@ -295,17 +293,8 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
    OS_timer_table[possible_tid].callback_ptr = callback_ptr;
   
    /* 
-   ** Create an interval timer
+   ** Create an interval timer -> Move to OS_TimerSet()
    */
-   calm.almatr = TA_NULL;
-   calm.exinf = 0;
-   calm.almhdr = (ALMHDR)OS_timer_table[possible_tid].callback_ptr;
-   status = acre_alm(&calm);
-   if ( status != E_OK )
-   {
-      OS_timer_table[possible_tid].free = TRUE;
-      return(OS_TIMER_ERR_UNAVAILABLE);
-   }
 
    /*
    ** Return the clock accuracy to the user
@@ -333,8 +322,8 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
 */
 int32 OS_TimerSet(uint32 timer_id, uint32 start_time, uint32 interval_time)
 {
-   rtems_interval    timeout;
-   rtems_status_code status;
+   ER status;
+   T_CCYC             ccyc;
    
    /* 
    ** Check to see if the timer_id given is valid 
@@ -370,20 +359,20 @@ int32 OS_TimerSet(uint32 timer_id, uint32 start_time, uint32 interval_time)
    */
    if ( start_time > 0 )
    {
-      /*
-      ** Convert from Microseconds to the timeout
-      */
-      OS_UsecsToTicks(start_time, &timeout);
+      ccyc.cycatr = TA_STA;
+      ccyc.exinf = 0;
+      ccyc.cychdr = (ALMHDR)OS_timer_table[timer_id].callback_ptr;
+      ccyc.cyctim = OS_timer_table[timer_id].interval_time / 1000;
+      ccyc.cycphs = OS_timer_table[timer_id].start_time / 1000;
 
-      status = rtems_timer_fire_after(OS_timer_table[timer_id].host_timerid, 
-                                        timeout, 
-                                        OS_TimerSignalHandler, (void *)timer_id );
-      if ( status != RTEMS_SUCCESSFUL )
+      status = acre_cyc(&ccyc);
+      if ( status != E_OK )
       {
-         return ( OS_TIMER_ERR_INTERNAL);
+        OS_timer_table[possible_tid].free = TRUE;
+        return ( OS_TIMER_ERR_INTERNAL);
       }
-   }
-   return OS_SUCCESS;
+    }
+  return OS_SUCCESS;
 }
 
 /******************************************************************************
