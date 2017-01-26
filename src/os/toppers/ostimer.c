@@ -24,8 +24,8 @@
 #include <sys/types.h>
 #include <stdio.h>
 
-//#include <rtems.h>
-//TODO :
+#include "kernel.h" /* TOPPERS */
+#include "itron.h"
 
 #include "common_types.h"
 #include "osapi.h"
@@ -88,7 +88,6 @@ int32  OS_TimerAPIInit ( void )
 {
    int               i;
    int32             return_code = OS_SUCCESS;
-   rtems_status_code rtems_sc;
    
    /*
    ** Mark all timers as available
@@ -103,18 +102,19 @@ int32  OS_TimerAPIInit ( void )
    /*
    ** Store the clock accuracy for 1 tick.
    */
-   OS_TicksToUsecs(1, &os_clock_accuracy);
+   //OS_TicksToUsecs(1, &os_clock_accuracy);
 
    /*
    ** Create the Timer Table semaphore
    */
-   rtems_sc = rtems_semaphore_create (rtems_build_name ('M', 'U', 'T', '6'),
-                                      1, OSAL_TABLE_MUTEX_ATTRIBS, 0,
-                                      &OS_timer_table_sem);
-   if ( rtems_sc != RTEMS_SUCCESSFUL )
-   {
-      return_code = OS_ERROR;
-   }
+#if 0 
+/* 内部で使用するミューテックスは以下の静的APIを用いて事前に生成する */
+KERNEL_DOMAIN {
+   CRE_MTX(OSAL_TIMER_TABLE_MTX, {TA_CEILING, TMIN_TPRI});
+}
+   
+   OS_timer_table_sem      = OSAL_TIMER_TABLE_MTX;
+#endif
    
    return(return_code);
    
@@ -223,10 +223,10 @@ void  OS_TicksToUsecs(rtems_interval ticks, uint32 *usecs)
 int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name, 
                      uint32 *clock_accuracy, OS_TimerCallback_t  callback_ptr)
 {
-   rtems_status_code status;
-   rtems_name        RtemsTimerName;
+   ER                status;
    uint32            possible_tid;
    int32             i;
+   T_CALM            calm;
 
    if ( timer_id == NULL || timer_name == NULL || clock_accuracy == NULL )
    {
@@ -245,7 +245,7 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
    /* 
    ** Check Parameters 
    */
-   status = rtems_semaphore_obtain (OS_timer_table_sem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+   loc_mtx(OS_timer_table_sem);
 
    for(possible_tid = 0; possible_tid < OS_MAX_TIMERS; possible_tid++)
    {
@@ -255,7 +255,7 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
 
    if( possible_tid >= OS_MAX_TIMERS || OS_timer_table[possible_tid].free != TRUE)
    {
-        status = rtems_semaphore_release (OS_timer_table_sem);
+        unl_mtx(OS_timer_table_sem);
         return OS_ERR_NO_FREE_IDS;
    }
 
@@ -267,7 +267,7 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
        if ((OS_timer_table[i].free == FALSE) &&
             strcmp ((char*) timer_name, OS_timer_table[i].name) == 0)
        {
-            status = rtems_semaphore_release (OS_timer_table_sem);
+            unl_mtx(OS_timer_table_sem);
             return OS_ERR_NAME_TAKEN;
        }
    }
@@ -277,7 +277,7 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
    */
    if (callback_ptr == NULL ) 
    {
-      status = rtems_semaphore_release (OS_timer_table_sem);
+      unl_mtx(OS_timer_table_sem);
       return OS_TIMER_ERR_INVALID_ARGS;
    }    
 
@@ -286,7 +286,7 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
    ** no other task can try to use it 
    */
    OS_timer_table[possible_tid].free = FALSE;
-   status = rtems_semaphore_release (OS_timer_table_sem);
+   unl_mtx(OS_timer_table_sem);
 
    OS_timer_table[possible_tid].creator = OS_FindCreator();
    strncpy(OS_timer_table[possible_tid].name, timer_name, OS_MAX_API_NAME);
@@ -297,9 +297,11 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
    /* 
    ** Create an interval timer
    */
-   RtemsTimerName = rtems_build_name(timer_name[0],timer_name[1],timer_name[2],timer_name[3]);
-   status = rtems_timer_create(RtemsTimerName, &(OS_timer_table[possible_tid].host_timerid));
-   if ( status != RTEMS_SUCCESSFUL )
+   calm.almatr = TA_NULL;
+   calm.exinf = 0;
+   calm.almhdr = (ALMHDR)OS_timer_table[possible_tid].callback_ptr;
+   status = acre_alm(&calm);
+   if ( status != E_OK )
    {
       OS_timer_table[possible_tid].free = TRUE;
       return(OS_TIMER_ERR_UNAVAILABLE);
