@@ -239,7 +239,8 @@ void UT_BSP_DoText(uint8 MessageType, const char *OutputMessage)
     */
    if (MessageType == UTASSERT_CASETYPE_ABORT)
    {
-       abort();
+       //abort();
+      ext_ker();
    }
 }
 
