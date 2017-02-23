@@ -2,12 +2,17 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "kernel.h" /* TOPPERS */
+#include "itron.h"
+#include "syssvc/serial.h"
+#include "syssvc/syslog.h"
+
 #include "common_types.h"
 #include "osapi.h"
 #include "osal-core-test.h"
 #include "utassert.h"
-#include "uttest.h"
-#include "utbsp.h"
+//#include "uttest.h"
+//#include "utbsp.h"
 
 /* OS Constructs */
 
@@ -29,11 +34,13 @@ void OS_Application_Startup(void)
         UtAssert_Abort("OS_API_Init() failed");
     }
     
-    UtTest_Add(TestTasks, NULL, NULL, "TASK");
-    UtTest_Add(TestQueues, NULL, NULL, "MSGQ");
-    UtTest_Add(TestBinaries, NULL, NULL, "BSEM");
-    UtTest_Add(TestMutexes, NULL, NULL, "MSEM");
-    UtTest_Add(TestGetInfos, NULL, NULL, "INFO");
+    syslog(LOG_NOTICE, "OS_Application_Startup start");
+    TestTasks();
+    //UtTest_Add(TestTasks, NULL, NULL, "TASK");
+    //UtTest_Add(TestQueues, NULL, NULL, "MSGQ");
+    //UtTest_Add(TestBinaries, NULL, NULL, "BSEM");
+    //UtTest_Add(TestMutexes, NULL, NULL, "MSEM");
+    //UtTest_Add(TestGetInfos, NULL, NULL, "INFO");
     
 } /* end OS_Application Startup */
 
@@ -58,12 +65,15 @@ void TestTasks(void)
     memset(TaskData,0xFF,sizeof(TaskData));
     for (tasknum = 0; tasknum < (OS_MAX_TASKS + 1); ++tasknum)
     {
-       snprintf(taskname,sizeof(taskname), "Task %d", tasknum);
+       //snprintf(taskname,sizeof(taskname), "Task %d", tasknum);
+       ut_snprintf(taskname,sizeof(taskname), "Task %d", tasknum);
        status = OS_TaskCreate( &TaskData[tasknum].task_id, taskname, task_0, TaskData[tasknum].task_stack,
                                TASK_0_STACK_SIZE, (250 - OS_MAX_TASKS) + tasknum, 0);
 
+        syslog(LOG_NOTICE, "Create %s Status = %d, Id = %d\n",taskname,(int)status,(int)TaskData[tasknum].task_id );
        UtDebug("Create %s Status = %d, Id = %d\n",taskname,(int)status,(int)TaskData[tasknum].task_id);
 
+        //syslog(LOG_ALERT, "Create %s Status = %d, Id = %d\n",taskname,(int)status,(int)TaskData[tasknum].task_id);
        UtAssert_True((tasknum < OS_MAX_TASKS && status == OS_SUCCESS) ||
              (tasknum >= OS_MAX_TASKS && status != OS_SUCCESS), "OS_TaskCreate, nominal");
     }
@@ -74,7 +84,7 @@ void TestTasks(void)
     /* Testing the Deletions of all the tasks we have created */
     for (tasknum = 0; tasknum < (OS_MAX_TASKS + 1); ++tasknum)
     {
-       snprintf(taskname,sizeof(taskname), "Task %d", tasknum);
+       //snprintf(taskname,sizeof(taskname), "Task %d", tasknum);
        status = OS_TaskDelete( TaskData[tasknum].task_id );
 
        UtDebug("Delete Status = %d, Id = %d\n",(int)status,(int)TaskData[tasknum].task_id);
@@ -164,7 +174,7 @@ void TestQueues(void)
     
     for (qnum = 0; qnum < (OS_MAX_QUEUES + 1); ++qnum)
     {
-       snprintf(qname,sizeof(qname),"q %d", qnum);
+       //snprintf(qname,sizeof(qname),"q %d", qnum);
        status = OS_QueueCreate( &msgq_ids[qnum], qname, MSGQ_DEPTH, MSGQ_SIZE, 0);
 
        UtAssert_True((qnum < OS_MAX_QUEUES && status == OS_SUCCESS) ||
@@ -262,7 +272,7 @@ void TestBinaries(void)
 
     for (bnum = 0; bnum < (OS_MAX_BIN_SEMAPHORES + 1); ++bnum)
     {
-       snprintf(bname,sizeof(bname),"Bin %d", bnum);
+       //snprintf(bname,sizeof(bname),"Bin %d", bnum);
        status = OS_BinSemCreate( &binsem_ids[bnum], bname, 1, 0);
 
        UtAssert_True((bnum < OS_MAX_BIN_SEMAPHORES && status == OS_SUCCESS) ||
@@ -361,7 +371,7 @@ void TestMutexes(void)
 
     for (mnum = 0; mnum < (OS_MAX_MUTEXES + 1); ++mnum)
     {
-       snprintf(mname,sizeof(mname),"Mut %d", mnum);
+       //snprintf(mname,sizeof(mname),"Mut %d", mnum);
        status = OS_MutSemCreate( &mutex_ids[mnum], mname, 0);
 
        UtAssert_True((mnum < OS_MAX_MUTEXES && status == OS_SUCCESS) ||

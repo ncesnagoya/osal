@@ -122,7 +122,7 @@
 #define _osapi_filesys_
 #include <stdio.h>
 #include <stdlib.h>
-#include <dirent.h>
+//#include <dirent.h>
 #include <sys/stat.h>
 
 #define OS_READ_ONLY        0

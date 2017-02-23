@@ -48,6 +48,9 @@
 #ifndef _osconfig_
 #define _osconfig_
 
+
+extern void BSP_Init_Toppers(long exinf);
+
 /*
 ** Platform Configuration Parameters for the OS API
 */

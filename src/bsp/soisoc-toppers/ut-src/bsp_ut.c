@@ -30,6 +30,7 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <errno.h>
 //#include <rtems.h>
 //#include <rtems/mkrootfs.h>
@@ -179,9 +180,14 @@ void UT_BSP_Setup(const char *Name)
 void UT_BSP_StartTestSegment(uint32 SegmentNumber, const char *SegmentName)
 {
     char ReportBuffer[128];
+    uint_t i;
+    char c;
 
     //snprintf(ReportBuffer,sizeof(ReportBuffer), "%02u %s", (unsigned int)SegmentNumber, SegmentName);
-    UT_BSP_DoText(UTASSERT_CASETYPE_BEGIN, ReportBuffer);
+    //if( )
+    syslog(LOG_EMERG, "[UT_BSP] %02u %s\n",(unsigned int)SegmentNumber,SegmentName);
+    //syslog_printf("%s", SegmentName, ReportBuffer);
+    //UT_BSP_DoText(UTASSERT_CASETYPE_BEGIN, ReportBuffer);
 }
 
 void UT_BSP_DoText(uint8 MessageType, const char *OutputMessage)
@@ -230,7 +236,7 @@ void UT_BSP_DoText(uint8 MessageType, const char *OutputMessage)
          Prefix = "OTHER";
          break;
       }
-      syslog(LOG_NOTICE, "[%5s] %s\n",Prefix,OutputMessage);
+      //syslog(LOG_ALERT, "[%5s] %s\n",Prefix,OutputMessage);
    }
 
    /*
@@ -319,6 +325,154 @@ void UT_BSP_EndTest(const UtAssert_TestCounter_t *TestCounters)
 
 }
 
+// log_output.cからsyslog_printfを流用してvsnprintfを作成
+
+
+/*
+ *  数値を文字列に変換
+ */
+#define CONVERT_BUFLEN  ((sizeof(uintptr_t) * CHAR_BIT + 2) / 3)
+                    /* uintptr_t型の数値の最大文字数 */
+static int
+convert(uintptr_t val, uint_t radix, const char *radchar,
+      uint_t width, bool_t minus, bool_t padzero, char *str, uint_t strlen )
+{
+  char  buf[CONVERT_BUFLEN];
+  uint_t  i, j;
+
+  i = 0U;
+  do {
+    str[i++] = radchar[val % radix];
+    val /= radix;
+
+  } while (i < CONVERT_BUFLEN && val != 0);
+  str[i] = '\0';
+//  } while (i < buflen && val != 0);
+    syslog(LOG_NOTICE, "convert, str[%s]:%x i[%d]", str, str, i);
+
+/*  if (minus && width > 0) {
+    width -= 1;
+  }
+  if (minus && padzero) {
+    //(*putc)('-');
+    buf[i++] = '-';
+  }
+  for (j = i; j < width; j++) {
+    //(*putc)(padzero ? '0' : ' ');
+    buf[i++] = padzero ? '0' : ' ';
+  }
+  if (minus && !padzero) {
+    //(*putc)('-');
+    buf[i++] = '-';
+  }
+  //while (i > 0U) {
+  //  (*putc)(buf[--i]);
+  //}
+  //syslog(LOG_NOTICE, "convert, buf[%s] i[%d]", buf[0], i);
+*/
+  return(i);
+}
+
+/*
+ *  文字列整形出力
+ */
+static const char raddec[] = "0123456789";
+static const char radhex[] = "0123456789abcdef";
+static const char radHEX[] = "0123456789ABCDEF";
+
+int ut_snprintf(char *str, size_t strlen, const char *format, ...)
+{
+  va_list arg;
+
+  va_start(arg, format);
+  ut_vsnprintf(str, strlen, format, arg);
+  va_end(arg);
+}
+
+int ut_vsnprintf(char *str, size_t strlen, const char *format, va_list ap)
+{
+  char      c;
+  int       len;
+  int       size;
+  uint_t    width;
+  bool_t    padzero;
+  intptr_t  val;
+  const char *s;
+
+  s = str;
+
+  len = 0;
+
+  while ( ((c = *format++) != '\0') && (len < strlen) ) {
+    if (c != '%') {
+      *(str++) = c;
+      len++;
+      continue;
+    }
+    //syslog(LOG_NOTICE, "str[%s] strlen[%d] s[%s] len[%d]", str, strlen, s, len);
+
+    width = 0U;
+    padzero = false;
+    if ((c = *format++) == '0') {
+      padzero = true;
+      c = *format++;
+    }
+    while ('0' <= c && c <= '9') {
+      width = width * 10U + c - '0';
+      c = *format++;
+    }
+    if (c == 'l') {
+      c = *format++;
+    }
+    switch (c) {
+    case 'd':
+      val = (intptr_t)va_arg(ap, signed long);
+      if (val >= 0) {
+    syslog(LOG_NOTICE, "str[%s]:%x strlen[%d] s[%s]:%x len[%d]", str, str, strlen, s, s,len);
+    //syslog(LOG_ALERT, "printf d, val[%d] width[%d] padzero[%d] str[%s] len[%d] stradd[%x]", val, width, padzero, str, len, *str);
+        size = convert((uintptr_t) val, 10U, raddec,
+                    width, false, padzero, str, strlen - len);
+      //syslog(LOG_ALERT, "[%s]", str);
+      }
+      else {
+        size = convert((uintptr_t)(-val), 10U, raddec,
+                    width, true, padzero, str, sizeof(str)-len);
+      }
+      break;
+    case 'u':
+      val = (intptr_t)va_arg(ap, signed long);
+      size = convert((uintptr_t) val, 10U, raddec, width, false, padzero, str, sizeof(str)-len);
+      break;
+    case 'x':
+    case 'p':
+      val = (intptr_t)va_arg(ap, unsigned long);
+      size = convert((uintptr_t) val, 16U, radhex, width, false, padzero, str, sizeof(str)-len);
+      break;
+    case 'X':
+      val = (intptr_t)va_arg(ap, unsigned long);
+      size = convert((uintptr_t) val, 16U, radHEX, width, false, padzero, str, sizeof(str)-len);
+      break;
+    case 'c':
+      str = (char)va_arg(ap, int);
+      size = 1;
+      break;
+    case 's':
+      s = (const char *)va_arg(ap, char*);
+      size = 0;
+      while (((c = *s++) != '\0') && (len+size < strlen) ) {
+        *str++ = c;
+        size++;
+      }
+      size = 0;
+      break;
+    default:
+
+      break;
+    }
+    len += size;
+  }
+  *str = '\0';
+}
 
 #if 0
 /*

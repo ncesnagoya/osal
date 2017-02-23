@@ -36,6 +36,10 @@
 //#include <rtems/diskdevs.h>
 //#include <rtems/error.h>
 //#include <rtems/ramdisk.h>
+#include "kernel.h" /* TOPPERS */
+#include "itron.h"
+#include "syssvc/serial.h"
+#include "syssvc/syslog.h"
 
 /*
 ** OSAL includes 
@@ -103,17 +107,51 @@ void OS_BSPMain( void )
    /*
    ** Call OSAL entry point.    
    */
+  //syslog(LOG_NOTICE, "OS_BSPMain start");
    OS_Application_Startup();
    
    /*
    ** Just sleep while OSAL code runs
    */
-   for ( ;; )
+   //for ( ;; )
+   // syslog(LOG_EMERG, "*** END OF OSAL TEST ***");
       //sleep(1);
-    ;
+   // ;
 
 }
 
+void BSP_Init_Toppers(intptr_t exinf)
+{
+  ER_UINT ercd;
+
+  syslog_msk_log(LOG_UPTO(LOG_INFO), LOG_UPTO(LOG_EMERG));
+
+  //syslog(LOG_NOTICE, "BSP_Init start");
+
+  /*
+   *  シリアルポートの初期化
+   *
+   *  システムログタスクと同じシリアルポートを使う場合など，シリアル
+   *  ポートがオープン済みの場合にはここでE_OBJエラーになるが，支障は
+   *  ない．
+   */
+
+  ercd = serial_opn_por(0);
+  if (ercd < 0 && MERCD(ercd) != E_OBJ) {
+    syslog(LOG_ERROR, "%s (%d) reported by `serial_opn_por'.",
+                  itron_strerror(ercd), SERCD(ercd));
+  }
+  serial_ctl_por(0,
+              (IOCTL_CRLF | IOCTL_FCSND | IOCTL_FCRCV));
+
+  OS_BSPMain();
+
+  //syslog(LOG_EMERG, "*** END OF OSAL TEST ***");
+  syslog(LOG_NOTICE, "*** END OF OSAL TEST ***");
+
+  ext_ker();
+
+}
 #if 0
 rtems_task Init(
   rtems_task_argument ignored

@@ -250,7 +250,7 @@ int32 OS_API_Init(void)
    /*
    ** Initialize the Timer API
    */
-   return_code = OS_TimerAPIInit();
+   //return_code = OS_TimerAPIInit();
    if ( return_code == OS_ERROR )
    {
       return(return_code);
@@ -280,7 +280,7 @@ KERNEL_DOMAIN {
    /*
    ** File system init
    */
-   return_code = OS_FS_Init();
+   //return_code = OS_FS_Init();
 
    
    return(return_code);
