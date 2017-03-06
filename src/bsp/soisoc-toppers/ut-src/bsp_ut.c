@@ -58,6 +58,8 @@ void OS_Application_Startup(void);
 
 //extern rtems_status_code rtems_ide_part_table_initialize (const char* );
 
+//int tsprintf(char* buff,char* fmt, ...);
+
 
 #define RTEMS_NUMBER_OF_RAMDISKS 1
 
@@ -110,18 +112,18 @@ uint32 CurrVerbosity = (2 << UTASSERT_CASETYPE_PASS) - 1;
 
 void UT_BSP_Setup(const char *Name)
 {
+#if 0
     int status;
 
-    syslog(LOG_NOTICE, "\n\n*** RTEMS Info ***\n" );
-    syslog(LOG_NOTICE, "%s", Name );
-    //printf("%s", _Copyright_Notice );
-    //printf("%s\n\n", _RTEMS_version );
-    //printf(" Stack size=%d\n", (int)Configuration.stack_space_size );
-    //printf(" Workspace size=%d\n",   (int) Configuration.work_space_size );
-    syslog(LOG_NOTICE, "\n");
-    syslog(LOG_NOTICE, "*** End RTEMS info ***\n\n" );
+    printf( "\n\n*** RTEMS Info ***\n" );
+    printf("%s", Name );
+    printf("%s", _Copyright_Notice );
+    printf("%s\n\n", _RTEMS_version );
+    printf(" Stack size=%d\n", (int)Configuration.stack_space_size );
+    printf(" Workspace size=%d\n",   (int) Configuration.work_space_size );
+    printf("\n");
+    printf( "*** End RTEMS info ***\n\n" );
 
-#if 0
     /*
     ** Create the RTEMS Root file system
     */
@@ -180,14 +182,10 @@ void UT_BSP_Setup(const char *Name)
 void UT_BSP_StartTestSegment(uint32 SegmentNumber, const char *SegmentName)
 {
     char ReportBuffer[128];
-    uint_t i;
-    char c;
 
     //snprintf(ReportBuffer,sizeof(ReportBuffer), "%02u %s", (unsigned int)SegmentNumber, SegmentName);
-    //if( )
-    syslog(LOG_EMERG, "[UT_BSP] %02u %s\n",(unsigned int)SegmentNumber,SegmentName);
-    //syslog_printf("%s", SegmentName, ReportBuffer);
-    //UT_BSP_DoText(UTASSERT_CASETYPE_BEGIN, ReportBuffer);
+    tsprintf(ReportBuffer, "%02u %s", (unsigned int)SegmentNumber, SegmentName);
+    UT_BSP_DoText(UTASSERT_CASETYPE_BEGIN, ReportBuffer);
 }
 
 void UT_BSP_DoText(uint8 MessageType, const char *OutputMessage)
@@ -218,6 +216,7 @@ void UT_BSP_DoText(uint8 MessageType, const char *OutputMessage)
          break;
       case UTASSERT_CASETYPE_BEGIN:
          //printf("\n"); /* add a bit of extra whitespace between tests */
+         syslog(LOG_EMERG, "\n");
          Prefix = "BEGIN";
          break;
       case UTASSERT_CASETYPE_END:
@@ -236,7 +235,7 @@ void UT_BSP_DoText(uint8 MessageType, const char *OutputMessage)
          Prefix = "OTHER";
          break;
       }
-      //syslog(LOG_ALERT, "[%5s] %s\n",Prefix,OutputMessage);
+      syslog(LOG_EMERG, "[%s] %s",Prefix,OutputMessage);
    }
 
    /*
@@ -272,6 +271,9 @@ void UT_BSP_DoReport(const char *File, uint32 LineNum, uint32 SegmentNum, uint32
     //snprintf(ReportBuffer,sizeof(ReportBuffer), "%02u.%03u %s:%u - %s",
     //        (unsigned int)SegmentNum, (unsigned int)TestSeq,
     //        BasePtr, (unsigned int)LineNum, ShortDesc);
+    tsprintf(ReportBuffer, "%02u.%03u %s:%u - %s",
+            (unsigned int)SegmentNum, (unsigned int)TestSeq,
+            BasePtr, (unsigned int)LineNum, ShortDesc);
 
     UT_BSP_DoText(MessageType, ReportBuffer);
 }
@@ -281,7 +283,8 @@ void UT_BSP_DoTestSegmentReport(const char *SegmentName, const UtAssert_TestCoun
     char ReportBuffer[128];
 
 //    snprintf(ReportBuffer,sizeof(ReportBuffer),
-    syslog(LOG_NOTICE,
+    //tsprintf(ReportBuffer,sizeof(ReportBuffer),
+    syslog(LOG_EMERG,
             "%02u %-20s TOTAL::%-4u  PASS::%-4u  FAIL::%-4u   MIR::%-4u   TSF::%-4u   N/A::%-4u\n",
             (unsigned int)TestCounters->TestSegmentCount,
             SegmentName,
@@ -308,7 +311,7 @@ void UT_BSP_EndTest(const UtAssert_TestCounter_t *TestCounters)
    }
 
 //   printf("COMPLETE: %u test segment(s) executed\n\n", (unsigned int)TestCounters->TestSegmentCount);
-   syslog(LOG_NOTICE, "COMPLETE: %u test segment(s) executed\n\n", (unsigned int)TestCounters->TestSegmentCount);
+   syslog(LOG_EMERG, "COMPLETE: %u test segment(s) executed\n\n", (unsigned int)TestCounters->TestSegmentCount);
 
    /*
     * Not calling exit() under RTEMS, this simply shuts down the executive,
@@ -325,8 +328,232 @@ void UT_BSP_EndTest(const UtAssert_TestCounter_t *TestCounters)
 
 }
 
+
+
+
+/*
+  数値 => 10進文字列変換
+*/
+static int tsprintf_decimal(signed long val,char* buff,int zf,int wd){
+  int i;
+  char tmp[10];
+  char* ptmp = tmp + 10;
+  int len = 0;
+  int minus = 0;
+
+  if (!val){    /* 指定値が0の場合 */
+    *(ptmp--) = '0';
+    len++;
+  } else {
+    /* マイナスの値の場合には2の補数を取る */
+    if (val < 0){
+      val = ~val;
+      val++;
+      minus = 1;
+    }
+    while (val){
+      /* バッファアンダーフロー対策 */
+      if (len >= 8){
+        break;
+      }
+  
+      *ptmp = (val % 10) + '0';
+      val /= 10;
+      ptmp--;
+      len++;
+    }
+
+  }
+
+  /* 符号、桁合わせに関する処理 */
+  if (zf){
+    if (minus){
+      wd--;
+    }
+    while (len < wd){
+      *(ptmp--) =  '0';
+      len++;
+    }
+    if (minus){
+      *(ptmp--) = '-';
+      len++;
+    }
+  } else {
+    if (minus){
+      *(ptmp--) = '-';
+      len++;
+    }
+    while (len < wd){
+      *(ptmp--) =  ' ';
+      len++;
+    }
+  }
+
+  /* 生成文字列のバッファコピー */
+  for (i=0;i<len;i++){
+    *(buff++) = *(++ptmp);
+  }
+
+  return (len);
+}
+
+/*
+  数値 => 16進文字列変換
+*/
+static int tsprintf_hexadecimal(unsigned long val,char* buff,
+                int capital,int zf,int wd){
+  int i;
+  char tmp[10];
+  char* ptmp = tmp + 10;
+  int len = 0;
+  char str_a;
+
+  /* A〜Fを大文字にするか小文字にするか切り替える */
+  if (capital){
+    str_a = 'A';
+  } else {
+    str_a = 'a';
+  }
+  
+  if (!val){    /* 指定値が0の場合 */
+    *(ptmp--) = '0';
+    len++;
+  } else {
+    while (val){
+      /* バッファアンダーフロー対策 */
+      if (len >= 8){
+        break;
+      }
+
+      *ptmp = (val % 16);
+      if (*ptmp > 9){
+        *ptmp += str_a - 10;
+      } else {
+        *ptmp += '0';
+      }
+    
+      val >>= 4;    /* 16で割る */
+      ptmp--;
+      len++;
+    }
+  }
+  while (len < wd){
+    *(ptmp--) =  zf ? '0' : ' ';
+    len++;
+  }
+    
+  for (i=0;i<len;i++){
+    *(buff++) = *(++ptmp);
+  }
+
+  return(len);
+}
+
+/*
+  数値 => 1文字キャラクタ変換
+*/
+static int tsprintf_char(int ch,char* buff){
+  *buff = (char)ch;
+  return(1);
+}
+
+/*
+  数値 => ASCIIZ文字列変換
+*/
+static int tsprintf_string(char* str,char* buff){
+  int count = 0;
+  while(*str){
+    *(buff++) = *str;
+    str++;
+    count++;
+  }
+  return(count);
+}
+
+/*
+  Tiny sprintf関数
+*/
+int tsprintf(char* buff,char* fmt, ...){
+  va_list arg;
+  int len;
+  int size;
+  int zeroflag,width;
+
+  size = 0;
+  len = 0;
+  va_start(arg, fmt);
+
+  vtsprintf(buff,fmt,arg);
+  
+  va_end(arg);
+}
+
+int vtsprintf(char* buff,char* fmt,va_list arg){
+  int len;
+  int size;
+  int zeroflag,width;
+
+  size = 0;
+  len = 0;
+
+  while(*fmt){
+    if(*fmt=='%'){    /* % に関する処理 */
+      zeroflag = width = 0;
+      fmt++;
+
+      if (*fmt == '0'){
+        fmt++;
+        zeroflag = 1;
+      }
+      if ((*fmt >= '0') && (*fmt <= '9')){
+        width = *(fmt++) - '0';
+      }
+
+      /* printf ("zerof = %d,width = %d\n",zeroflag,width); */
+
+      switch(*fmt){
+      case 'd':   /* 10進数 */
+      case 'u':   /* 符号無し10進数 */
+        size = tsprintf_decimal(va_arg(arg,signed long),buff,zeroflag,width);
+        break;
+      case 'x':   /* 16進数 0-f */
+        size = tsprintf_hexadecimal(va_arg(arg,unsigned long),buff,0,zeroflag,width);
+        break;
+      case 'X':   /* 16進数 0-F */
+        size = tsprintf_hexadecimal(va_arg(arg,unsigned long),buff,1,zeroflag,width);
+        break;
+      case 'c':   /* キャラクター */
+        size = tsprintf_char(va_arg(arg,int),buff);
+        break;
+      case 's':   /* ASCIIZ文字列 */
+        size = tsprintf_string(va_arg(arg,char*),buff);
+        break;
+      default:    /* コントロールコード以外の文字 */
+        /* %%(%に対応)はここで対応される */
+        len++;
+        *(buff++) = *fmt;
+        break;
+      }
+      len += size;
+      buff += size;
+      fmt++;
+    } else {
+      *(buff++) = *(fmt++);
+      len++;
+    }
+  }
+
+  *buff = '\0';   /* 終端を入れる */
+
+  va_end(arg);
+  return (len);
+}
+
+
 // log_output.cからsyslog_printfを流用してvsnprintfを作成
 
+
+#if 0
 
 /*
  *  数値を文字列に変換
@@ -339,16 +566,19 @@ convert(uintptr_t val, uint_t radix, const char *radchar,
 {
   char  buf[CONVERT_BUFLEN];
   uint_t  i, j;
+  char *lstr;
+
+  lstr = str;
 
   i = 0U;
   do {
-    str[i++] = radchar[val % radix];
+    buf[i] = radchar[val % radix];
     val /= radix;
 
-  } while (i < CONVERT_BUFLEN && val != 0);
-  str[i] = '\0';
+    //syslog(LOG_NOTICE, "convert, buf[%s]:%x i[%d]", buf, buf, i);
+  } while (i++ < CONVERT_BUFLEN && val != 0);
+  buf[i] = '\0';
 //  } while (i < buflen && val != 0);
-    syslog(LOG_NOTICE, "convert, str[%s]:%x i[%d]", str, str, i);
 
 /*  if (minus && width > 0) {
     width -= 1;
@@ -370,6 +600,12 @@ convert(uintptr_t val, uint_t radix, const char *radchar,
   //}
   //syslog(LOG_NOTICE, "convert, buf[%s] i[%d]", buf[0], i);
 */
+  for(j=0;j<i;j++)
+  {
+    *(str++) = buf[j];
+  }
+  *(str++) = '\0';
+  //syslog(LOG_EMERG, "convert, str[%s]:%x buf[%s] i[%d]", lstr, lstr, buf[0], i);
   return(i);
 }
 
@@ -401,7 +637,7 @@ int ut_vsnprintf(char *str, size_t strlen, const char *format, va_list ap)
 
   s = str;
 
-  len = 0;
+  len = 0U;
 
   while ( ((c = *format++) != '\0') && (len < strlen) ) {
     if (c != '%') {
@@ -428,11 +664,11 @@ int ut_vsnprintf(char *str, size_t strlen, const char *format, va_list ap)
     case 'd':
       val = (intptr_t)va_arg(ap, signed long);
       if (val >= 0) {
-    syslog(LOG_NOTICE, "str[%s]:%x strlen[%d] s[%s]:%x len[%d]", str, str, strlen, s, s,len);
-    //syslog(LOG_ALERT, "printf d, val[%d] width[%d] padzero[%d] str[%s] len[%d] stradd[%x]", val, width, padzero, str, len, *str);
+    //syslog(LOG_NOTICE, "printf d, val[%d] width[%d] padzero[%d] str[%s] len[%d] stradd[%x]", val, width, padzero, str, len, *str);
         size = convert((uintptr_t) val, 10U, raddec,
                     width, false, padzero, str, strlen - len);
       //syslog(LOG_ALERT, "[%s]", str);
+    //syslog(LOG_NOTICE, "str[%s]:%x strlen[%d] s[%s]:%x len[%d]", str, str, strlen, s, s,size);
       }
       else {
         size = convert((uintptr_t)(-val), 10U, raddec,
@@ -473,6 +709,7 @@ int ut_vsnprintf(char *str, size_t strlen, const char *format, va_list ap)
   }
   *str = '\0';
 }
+#endif
 
 #if 0
 /*

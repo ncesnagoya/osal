@@ -103,6 +103,13 @@
 */
 #define CompileTimeAssert(Condition, Message) typedef char Message[(Condition) ? 1 : -1]
 
+#ifndef STACK_SIZE
+#define STACK_SIZE    4096    /* タスクのスタックサイズ */
+#endif /* STACK_SIZE */
+
+#ifndef KMM_SIZE
+#define KMM_SIZE    (STACK_SIZE * 16) /* カーネルが割り付ける   */
+#endif /* KMM_SIZE */           /*     メモリ領域のサイズ */
 
 /*
 ** Define compiler specific macros

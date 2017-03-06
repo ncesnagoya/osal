@@ -73,6 +73,7 @@
 #include "itron.h"
 #include "syssvc/serial.h"
 #include "syssvc/syslog.h"
+#include "t_stdlib.h"
 
 /*
 ** User defined include files
@@ -96,6 +97,16 @@ uint32  OS_FindCreator(void);
 #define UNINITIALIZED               0 
 
 
+
+Inline void
+svc_perror(const char *file, int_t line, const char *expr, ER ercd)
+{
+  if (ercd < 0) {
+    t_perror(LOG_ERROR, file, line, expr, ercd);
+  }
+}
+
+#define SVC_PERROR(expr)  svc_perror(__FILE__, __LINE__, #expr, (expr))
 
 /****************************************************************************************
                                    GLOBAL DATA
@@ -333,7 +344,7 @@ KERNEL_DOMAIN {
     }
 
     /* Check for bad priority */
-    if (priority > MAX_PRIORITY)
+    if (priority > MAX_PRIORITY || priority == 0)
     {
       return OS_ERR_INVALID_PRIORITY;
     }
@@ -363,6 +374,7 @@ KERNEL_DOMAIN {
        ( strcmp((char*)task_name, OS_task_table[i].name) == 0)) 
       {        
         unl_mtx(OS_task_table_sem);
+        syslog(LOG_DEBUG, "OS_TaskCreate status is OS_ERR_NAME_TAKEN[%s]",task_name);
         return OS_ERR_NAME_TAKEN;
       }
     }
@@ -372,19 +384,21 @@ KERNEL_DOMAIN {
     OS_task_table[possible_taskid].free  = FALSE;
     unl_mtx(OS_task_table_sem);
 
-    ctsk.tskatr = TA_DOM(TDOM_KERNEL);
+    ctsk.tskatr = TA_DOM(TDOM_KERNEL);  /* カーネルドメインで作成 */
     ctsk.task = (TASK)(function_pointer);
-    ctsk.itskpri = priority;
+    ctsk.itskpri = priority / 16 + 1;
     ctsk.stksz = stack_size;
-    ctsk.stk = (STK_T *)(stack_pointer);
-    ctsk.sstksz = stack_size;
+    //ctsk.stk = (STK_T *)(stack_pointer);
+    ctsk.stk = NULL;
+    ctsk.sstksz = 256;
     ctsk.sstk = NULL;
 
     status = acre_tsk(&ctsk);
     
     /* check if task_create failed */
-    if (status != E_OK )
+    if (status < E_OK )
     {       
+      SVC_PERROR(status);
       loc_mtx(OS_task_table_sem);
       OS_task_table[possible_taskid].free  = TRUE;
       unl_mtx(OS_task_table_sem);
@@ -397,9 +411,11 @@ KERNEL_DOMAIN {
 
     if (status != E_OK )
     {		
+      SVC_PERROR(status);
       loc_mtx(OS_task_table_sem);
       OS_task_table[possible_taskid].free  = TRUE;
       unl_mtx(OS_task_table_sem);
+      syslog(LOG_DEBUG, "OS_TaskCreate will place the task in 'ready for scheduling' state");
       return OS_ERROR;		
     }
     
@@ -432,6 +448,8 @@ KERNEL_DOMAIN {
 int32 OS_TaskDelete (uint32 task_id)
 {    
     FuncPtr_t         FunctionPointer;
+    ER       ercd;
+    uint32   max_loop;
     
     /* 
     ** Check to see if the task_id given is valid 
@@ -451,11 +469,17 @@ int32 OS_TaskDelete (uint32 task_id)
     }
 
     /* Try to delete the task */
-    if (del_tsk(OS_task_table[task_id].id) != E_OK)
+    max_loop = 0;
+    do {
+      ter_tsk(OS_task_table[task_id].id);
+      ercd = del_tsk(OS_task_table[task_id].id);
+    } while (ercd == E_OBJ && ++max_loop < 5);
+    if (ercd != E_OK)
     {
+      SVC_PERROR(ercd);
       return OS_ERROR;
     }
-    
+
     /*
      * Now that the task is deleted, remove its 
      * "presence" in OS_task_table
@@ -734,7 +758,7 @@ int32 OS_TaskInstallDeleteHandler(osal_task_entry function_pointer)
 int32 OS_QueueCreate (uint32 *queue_id, const char *queue_name, uint32 queue_depth, 
                        uint32 data_size, uint32 flags)
 {
-    ER                 status;
+    ER_ID              status;
     uint32             possible_qid;
     uint32             i;
     T_CDTQ             cdtq;
@@ -795,8 +819,9 @@ int32 OS_QueueCreate (uint32 *queue_id, const char *queue_name, uint32 queue_dep
     /*
     ** If the operation failed, report the error 
     */
-    if (status != E_OK) 
+    if (status < E_OK) 
     {    
+       SVC_PERROR(status);
        loc_mtx(OS_queue_table_sem);
        OS_queue_table[possible_qid].free = TRUE;   
        OS_queue_table[possible_qid].id = 0;
@@ -1180,8 +1205,9 @@ int32 OS_BinSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initial_
     status = acre_sem(&csem);
 
     /* check if Create failed */
-    if ( status != E_OK )
+    if ( status < E_OK )
     {
+        SVC_PERROR(status);
         loc_mtx(OS_bin_sem_table_sem);
         OS_bin_sem_table[possible_semid].free = TRUE;
         OS_bin_sem_table[possible_semid].id = 0;
@@ -1585,8 +1611,9 @@ int32 OS_CountSemCreate (uint32 *sem_id, const char *sem_name, uint32 sem_initia
     status = acre_sem(&csem);
 
     /* check if Create failed */
-    if ( status != E_OK )
-    {        
+    if ( status < E_OK )
+    {
+        SVC_PERROR(status);
         loc_mtx(OS_count_sem_table_sem);
         OS_count_sem_table[possible_semid].free = TRUE;
         unl_mtx(OS_count_sem_table_sem);
@@ -1951,8 +1978,9 @@ int32 OS_MutSemCreate (uint32 *sem_id, const char *sem_name, uint32 options)
     cmtx.ceilpri = TMIN_TPRI;
 
     status = acre_mtx(&cmtx);
-    if ( status != E_OK )
+    if ( status < E_OK )
     {
+        SVC_PERROR(status);
         loc_mtx(OS_mut_sem_table_sem);
         OS_mut_sem_table[possible_semid].free = TRUE;
         unl_mtx(OS_mut_sem_table_sem);
@@ -2477,7 +2505,7 @@ void OS_printf( const char *String, ...)
 
     if ( OS_printf_enabled == TRUE )    
     {
-      syslog(LOG_NOTICE, "%s", String);
+      syslog(LOG_EMERG, "%s", String);
     }
     
 }/* end OS_printf*/

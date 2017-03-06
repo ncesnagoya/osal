@@ -26,6 +26,10 @@
 
 #include "kernel.h" /* TOPPERS */
 #include "itron.h"
+#include "syssvc/serial.h"
+#include "syssvc/syslog.h"
+#include "t_stdlib.h"
+
 
 #include "common_types.h"
 #include "osapi.h"
@@ -137,6 +141,7 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
 
    if ( timer_id == NULL || timer_name == NULL || clock_accuracy == NULL )
    {
+        syslog(LOG_EMERG, "OS_TimerCreate OS_INVALID_POINTER");
         return OS_INVALID_POINTER;
    }
 
@@ -146,6 +151,7 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
    */
    if (strlen(timer_name) > OS_MAX_API_NAME)
    {
+        syslog(LOG_EMERG, "OS_TimerCreate OS_ERR_NAME_TOO_LONG");
       return OS_ERR_NAME_TOO_LONG;
    }
 
@@ -163,6 +169,7 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
    if( possible_tid >= OS_MAX_TIMERS || OS_timer_table[possible_tid].free != TRUE)
    {
         unl_mtx(OS_timer_table_sem);
+        syslog(LOG_EMERG, "OS_TimerCreate OS_ERR_NO_FREE_IDS");
         return OS_ERR_NO_FREE_IDS;
    }
 
@@ -175,6 +182,7 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
             strcmp ((char*) timer_name, OS_timer_table[i].name) == 0)
        {
             unl_mtx(OS_timer_table_sem);
+        syslog(LOG_EMERG, "OS_TimerCreate OS_ERR_NAME_TAKEN");
             return OS_ERR_NAME_TAKEN;
        }
    }
@@ -185,6 +193,7 @@ int32 OS_TimerCreate(uint32 *timer_id,       const char         *timer_name,
    if (callback_ptr == NULL ) 
    {
       unl_mtx(OS_timer_table_sem);
+        syslog(LOG_EMERG, "OS_TimerCreate OS_TIMER_ERR_INVALID_ARGS");
       return OS_TIMER_ERR_INVALID_ARGS;
    }    
 
@@ -239,6 +248,7 @@ int32 OS_TimerSet(uint32 timer_id, uint32 start_time, uint32 interval_time)
    */
    if (timer_id >= OS_MAX_TIMERS || OS_timer_table[timer_id].free == TRUE)
    {
+        syslog(LOG_EMERG, "OS_TimerSet OS_ERR_INVALID_ID");
       return OS_ERR_INVALID_ID;
    }
 
@@ -275,9 +285,10 @@ int32 OS_TimerSet(uint32 timer_id, uint32 start_time, uint32 interval_time)
       ccyc.cycphs = OS_timer_table[timer_id].start_time / 1000;
 
       status = acre_cyc(&ccyc);
-      if ( status != E_OK )
+      if ( status < E_OK )
       {
         OS_timer_table[timer_id].free = TRUE;
+        syslog(LOG_EMERG, "OS_TimerSet OS_TIMER_ERR_INTERNAL");
         return ( OS_TIMER_ERR_INTERNAL);
       }
       OS_timer_table[timer_id].host_timerid = status;
@@ -305,6 +316,7 @@ int32 OS_TimerDelete(uint32 timer_id)
    */
    if (timer_id >= OS_MAX_TIMERS || OS_timer_table[timer_id].free == TRUE)
    {
+        syslog(LOG_EMERG, "OS_TimerDelete OS_ERR_INVALID_ID");
       return OS_ERR_INVALID_ID;
    }
 
@@ -318,6 +330,7 @@ int32 OS_TimerDelete(uint32 timer_id)
    status = del_cyc(OS_timer_table[timer_id].host_timerid);
    if ( status != E_OK )
    {
+        syslog(LOG_EMERG, "OS_TimerDelete OS_TIMER_ERR_INTERNAL");
       return ( OS_TIMER_ERR_INTERNAL);
    }
 	
@@ -343,6 +356,7 @@ int32 OS_TimerGetIdByName (uint32 *timer_id, const char *timer_name)
 
     if (timer_id == NULL || timer_name == NULL)
     {
+        syslog(LOG_EMERG, "OS_TimerGetIdByName OS_INVALID_POINTER");
         return OS_INVALID_POINTER;
     }
 
@@ -352,6 +366,7 @@ int32 OS_TimerGetIdByName (uint32 *timer_id, const char *timer_name)
     */
     if (strlen(timer_name) > OS_MAX_API_NAME)
     {
+        syslog(LOG_EMERG, "OS_TimerGetIdByName OS_ERR_NAME_TOO_LONG");
         return OS_ERR_NAME_TOO_LONG;
     }
 
@@ -369,6 +384,7 @@ int32 OS_TimerGetIdByName (uint32 *timer_id, const char *timer_name)
     ** The name was not found in the table,
     **  or it was, and the sem_id isn't valid anymore 
     */
+        syslog(LOG_EMERG, "OS_TimerGetIdByName OS_ERR_NAME_NOT_FOUND");
     return OS_ERR_NAME_NOT_FOUND;
     
 }/* end OS_TimerGetIdByName */
@@ -392,11 +408,13 @@ int32 OS_TimerGetInfo (uint32 timer_id, OS_timer_prop_t *timer_prop)
     */
     if (timer_id >= OS_MAX_TIMERS || OS_timer_table[timer_id].free == TRUE)
     {
+        syslog(LOG_EMERG, "OS_TimerGetInfo OS_ERR_INVALID_ID");
        return OS_ERR_INVALID_ID;
     }
 
     if (timer_prop == NULL)
     {
+        syslog(LOG_EMERG, "OS_TimerGetInfo OS_INVALID_POINTER");
        return OS_INVALID_POINTER;
     }
 
