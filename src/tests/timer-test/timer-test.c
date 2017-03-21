@@ -18,6 +18,7 @@
 
 #define TASK_1_ID         1
 #define TASK_1_STACK_SIZE 4096
+//#define TASK_1_PRIORITY   101
 #define TASK_1_PRIORITY   101
 
 void TimerTestSetup(void);
@@ -57,7 +58,9 @@ void OS_Application_Startup(void)
   /*
    * Register the timer test setup and check routines in UT assert
    */
-  UtTest_Add(TimerTestCheck, TimerTestSetup, NULL, "TimerTest");
+  //UtTest_Add(TimerTestCheck, TimerTestSetup, NULL, "TimerTest");
+  TimerTestSetup();
+  TimerTestCheck();
 }
 
 void TimerTestSetup(void)
@@ -84,7 +87,7 @@ void TimerTestSetup(void)
      *
      * Therefore it is OK to use UT asserts within both functions.
      */
-    OS_IdleLoop();
+    //TODO:OS_IdleLoop();
 }
 
 void TimerTestTask(void)
@@ -135,7 +138,7 @@ void TimerTestTask(void)
                i, (int)TimerStatus, (int)timer_counter[i]);
    }
 
-   OS_ApplicationShutdown(TRUE);
+   //TODO:OS_ApplicationShutdown(TRUE);
    OS_TaskExit();
 }
 
