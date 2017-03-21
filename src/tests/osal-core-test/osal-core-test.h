@@ -10,7 +10,7 @@
  */
 
 /* Task 0 */
-#define TASK_0_STACK_SIZE 1024
+#define TASK_0_STACK_SIZE 512
 #define TASK_0_PRIORITY   230
 
 uint32 task_0_stack[TASK_0_STACK_SIZE];

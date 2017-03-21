@@ -125,5 +125,7 @@ void UT_BSP_DoTestSegmentReport(const char *SegmentName, const UtAssert_TestCoun
  */
 void UT_BSP_EndTest(const UtAssert_TestCounter_t *TestCounters);
 
+extern int tsprintf(char* buff,char* fmt, ...);
+extern int vtsprintf(char* buff,char* fmt,va_list arg);
 
 #endif /* _UTBSP_H_ */

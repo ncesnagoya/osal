@@ -146,7 +146,7 @@ void task_2(void)
       OS_TaskDelay(100);
    }
 
-   OS_ApplicationShutdown(TRUE);
+   //OS_ApplicationShutdown(TRUE);
    OS_TaskExit();
 }
 
@@ -173,7 +173,9 @@ void OS_Application_Startup(void)
     /*
      * Register the test setup and check routines in UT assert
      */
-    UtTest_Add(BinSemCheck, BinSemSetup, NULL, "BinSemTest");
+    //UtTest_Add(BinSemCheck, BinSemSetup, NULL, "BinSemTest");
+    BinSemSetup();
+    BinSemCheck();
 }
 
 void BinSemSetup(void)
@@ -232,5 +234,5 @@ void BinSemSetup(void)
      * Call OS_IdleLoop so the tasks and timers can run
      * Something must call OS_ApplicationShutdown when done which will continue the test
      */
-    OS_IdleLoop();
+    //OS_IdleLoop();
 }

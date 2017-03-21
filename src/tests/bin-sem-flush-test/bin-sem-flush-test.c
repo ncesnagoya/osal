@@ -166,7 +166,11 @@ void OS_Application_Startup(void)
     /*
      * Register the test setup and check routines in UT assert
      */
-    UtTest_Add(BinSemFlushCheck, BinSemFlushSetup, BinSemFlushTeardown, "BinSemFlushTest");
+    //UtTest_Add(BinSemFlushCheck, BinSemFlushSetup, BinSemFlushTeardown, "BinSemFlushTest");
+    BinSemFlushSetup();
+    BinSemFlushCheck();
+    BinSemFlushTeardown();
+
 }
 
 void BinSemFlushSetup(void)

@@ -130,8 +130,8 @@ osalbool UtAssertEx(osalbool Expression, UtAssert_CaseType_t CaseType, const cha
 
     va_start(va, MessageFormat);
     //vsnprintf(FinalMessage, sizeof(FinalMessage), MessageFormat, va);
-    //syslog_printf(MessageFormat, va, FinalMessage);
-    //va_end(va);
+    vtsprintf(FinalMessage, MessageFormat, va);
+    va_end(va);
 
     UT_BSP_DoReport(File, Line, 1 + UT_TotalCounters.TestSegmentCount, UT_SegmentCounters.TotalTestCases, CaseType, CurrentSegment, FinalMessage);
 
@@ -150,7 +150,7 @@ void UtAssert_Message(uint8 MessageType, const char *File, uint32 Line, const ch
 
     va_start(va, Spec);
     //vsnprintf(FinalMessage, sizeof(FinalMessage), Spec, va);
-    ut_vsnprintf(FinalMessage, sizeof(FinalMessage), Spec, va);
+    vtsprintf(FinalMessage, Spec, va);
     va_end(va);
     UT_BSP_DoText(MessageType, FinalMessage);
 }

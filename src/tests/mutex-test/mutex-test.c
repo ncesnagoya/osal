@@ -203,7 +203,9 @@ void OS_Application_Startup(void)
     /*
      * Register the test setup and check routines in UT assert
      */
-    UtTest_Add(MutexCheck, MutexSetup, NULL, "MutexTest");
+    //UtTest_Add(MutexCheck, MutexSetup, NULL, "MutexTest");
+    MutexCheck();
+    MutexSetup();
 }
 
 void MutexSetup(void)

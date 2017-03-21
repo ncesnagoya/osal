@@ -13,5 +13,5 @@ perl $TOPPERS_PATH/configure -T $TOPPERS_TARGET -A $APPTARGET \
     ../../../../osal/src/bsp/soisoc-toppers/ut-src \
     ../../../../osal/ut_assert/inc \
     ../../../../osal/ut_assert/src " \
-    -U "osapi.o utassert.o bsp_ut.o bsp_start.o" \
+    -U "osapi.o ostimer.o utassert.o bsp_ut.o bsp_start.o" \
     -O -D__SH__

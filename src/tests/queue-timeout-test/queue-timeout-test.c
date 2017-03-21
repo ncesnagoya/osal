@@ -91,7 +91,7 @@ void task_2(void)
       OS_TaskDelay(500);
    }
 
-   OS_ApplicationShutdown(TRUE);
+   //OS_ApplicationShutdown(TRUE);
    OS_TaskExit();
 }
 
@@ -134,7 +134,9 @@ void OS_Application_Startup(void)
     /*
      * Register the test setup and check routines in UT assert
      */
-    UtTest_Add(QueueTimeoutCheck, QueueTimeoutSetup, NULL, "QueueTimeoutTest");
+    //UtTest_Add(QueueTimeoutCheck, QueueTimeoutSetup, NULL, "QueueTimeoutTest");
+    QueueTimeoutCheck();
+    QueueTimeoutSetup();
 }
 
 void QueueTimeoutSetup(void)
@@ -175,5 +177,5 @@ void QueueTimeoutSetup(void)
    UtAssert_True(status == OS_SUCCESS, "Timer 1 set Rc=%d", (int)status);
 
 
-   OS_IdleLoop();
+   //OS_IdleLoop();
 }
