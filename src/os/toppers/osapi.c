@@ -2493,6 +2493,8 @@ uint32 OS_FindCreator(void)
  ---------------------------------------------------------------------------*/
 void OS_printf( const char *String, ...)
 {
+    va_list arg;
+    char buff[256];
 
     /*
     ** First, check to see if this is being called from an ISR
@@ -2505,7 +2507,10 @@ void OS_printf( const char *String, ...)
 
     if ( OS_printf_enabled == TRUE )    
     {
-      syslog(LOG_EMERG, "%s", String);
+      va_start(arg, String);
+      vtsprintf(buff,String,arg);
+      syslog(LOG_EMERG, "%s", buff);
+      va_end(arg);
     }
     
 }/* end OS_printf*/
