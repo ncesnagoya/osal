@@ -108,6 +108,8 @@
 #include <string.h>
 
 #include <kernel.h>
+#include "ff.h"
+#include "ffconf.h"
 
 #include "common_types.h"
 #include "osapi.h"
@@ -151,7 +153,7 @@ extern OS_FDTableEntry OS_FDTable[OS_MAX_NUM_OPEN_FILES];
 /*
 ** FatFs FileSystem Table Entity
 */
-FATFS FatFs_entity[_DRIVES];
+FATFS FatFs_entity[_VOLUMES];
 
 /*
 ** File Descriptor Table;
@@ -161,6 +163,12 @@ FIL Fat_FDTable[OS_MAX_NUM_OPEN_FILES];
 /*
 ** Open Directory info Table
 */
+typedef struct {
+    DIR                 dir;
+    FILINFO             file;
+    os_dirent_t         direntry;
+} tOpenDirTable;
+
 tOpenDirTable saOpenDir[OS_MAX_NUM_OPEN_FILES];
 
 /****************************************************************************************
@@ -169,7 +177,6 @@ tOpenDirTable saOpenDir[OS_MAX_NUM_OPEN_FILES];
 int32 OS_FS_Init(void)
 {
     int i;
-    rtems_status_code rtems_sc;
 
     /* Initialize the file system constructs */
     for (i =0; i < OS_MAX_NUM_OPEN_FILES; i++)
@@ -180,6 +187,12 @@ int32 OS_FS_Init(void)
         OS_FDTable[i].IsValid =    FALSE;
     }
 
+    memset( &FatFs_entity, 0, sizeof( FatFs_entity ) );
+    memset( &Fat_FDTable, 0, sizeof( Fat_FDTable ) );
+    memset( &saOpenDir, 0, sizeof( saOpenDir ) );
+
+#if 0
+These semaphore prepare with static API objects
    /*
    ** Initialize the FS subsystem semaphore
    */
@@ -201,7 +214,7 @@ int32 OS_FS_Init(void)
    {
       return(OS_ERROR);
    }
-
+#endif
 
    return(OS_SUCCESS);
 
@@ -1395,7 +1408,7 @@ int32 OS_check_name_length(const char *path)
     
     return OS_FS_SUCCESS;
 #endif
-    
+
 }/* end OS_check_name_length */
 /* --------------------------------------------------------------------------------------
     Name: OS_ShellOutputToFile
