@@ -107,14 +107,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <sys/types.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <rtems.h>
-#include <rtems/shell.h>
+#include <kernel.h>
 
 #include "common_types.h"
 #include "osapi.h"
@@ -145,9 +138,31 @@ extern uint32 OS_FindCreator(void);
                                    GLOBAL DATA
 ****************************************************************************************/
 
-OS_FDTableEntry OS_FDTable[OS_MAX_NUM_OPEN_FILES];
-rtems_id        OS_FDTableSem;
-rtems_id        OS_VolumeTableSem;
+/* 
+** This is the volume table reference. It is defined in the BSP/startup code for the board
+*/
+extern OS_VolumeInfo_t OS_VolumeTable [NUM_TABLE_ENTRIES]; 
+
+/*
+** Fd Table
+*/
+extern OS_FDTableEntry OS_FDTable[OS_MAX_NUM_OPEN_FILES];
+
+/*
+** FatFs FileSystem Table Entity
+*/
+FATFS FatFs_entity[_DRIVES];
+
+/*
+** File Descriptor Table;
+*/
+FIL Fat_FDTable[OS_MAX_NUM_OPEN_FILES];
+
+/*
+** Open Directory info Table
+*/
+tOpenDirTable saOpenDir[OS_MAX_NUM_OPEN_FILES];
+
 /****************************************************************************************
                                 INITIALIZATION FUNCTION
 ****************************************************************************************/
