@@ -872,9 +872,11 @@ int32 OS_FS_GetPhysDriveName(char * PhysDriveName, char * MountPoint)
 ---------------------------------------------------------------------------------------*/
 int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
 {
-#if 1
-    return OS_ERR_NOT_IMPLEMENTED;
-#else
+    char devname [OS_MAX_PATH_LEN];
+    char filename[OS_MAX_PATH_LEN];
+    int  NumChars;
+    int  i=0;
+
     /*
     ** Check to see if the path pointers are NULL
     */
@@ -905,11 +907,41 @@ int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
     }
  
     /*
-    ** In the RTEMS version of the OSAL, the virtual paths are the same
-    ** as the physical paths. So translating a path is simply copying it over.
+    ** Fill the file and device name to be sure they do not have garbage
     */
-    strncpy(LocalPath, VirtualPath, strlen(VirtualPath));
-    LocalPath[strlen(VirtualPath)] = '\0'; /* Truncate it with a NULL. */
+    memset((void *)devname,0,OS_MAX_PATH_LEN);
+    memset((void *)filename,0,OS_MAX_PATH_LEN);
+   
+    /* 
+    ** We want to find the number of chars to where the second "/" is.
+    ** Since we know the first one is in spot 0, we start looking at 1, and go until
+    ** we find it.
+    */    
+    NumChars = 1;
+    while ((NumChars <= strlen(VirtualPath)) && (VirtualPath[NumChars] != '/'))
+    {
+        NumChars++;
+    }
+    
+    /* 
+    ** Don't let it overflow to cause a segfault when trying to get the highest level
+    ** directory 
+    */
+    if (NumChars > strlen(VirtualPath))
+    {
+        NumChars = strlen(VirtualPath);
+    }
+  
+    /*
+    ** copy over only the part that is the device name 
+    */
+    strncpy(devname, VirtualPath, NumChars);
+    devname[NumChars] = '\0'; /* Truncate it with a NULL. */
+    
+    /*
+    ** Copy everything after the devname as the path/filename
+    */
+    strncpy(filename, &(VirtualPath[NumChars]), OS_MAX_PATH_LEN);
 
     #ifdef OS_DEBUG_PRINTF
        printf("VirtualPath: %s, Length: %d\n",VirtualPath, (int)strlen(VirtualPath));
@@ -917,7 +949,6 @@ int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
     #endif
 
     return OS_FS_SUCCESS;
-#endif
 
 } /* end OS_TranslatePath */
 
