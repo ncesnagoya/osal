@@ -734,6 +734,9 @@ int32 OS_fsBlocksFree (const char *name)
 ---------------------------------------------------------------------------------------*/
 int32 OS_fsBytesFree (const char *name, uint64 *bytes_free)
 {
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
    int               status;
    rtems_status_code rtems_sc;
    int32             NameStatus;
@@ -781,6 +784,7 @@ int32 OS_fsBytesFree (const char *name, uint64 *bytes_free)
    {
       return(OS_FS_ERROR);
    }
+#endif
 
 }/* end OS_fsBytesFree */
 
@@ -811,6 +815,9 @@ os_fshealth_t OS_chkfs (const char *name, boolean repair)
 ---------------------------------------------------------------------------------------*/
 int32 OS_FS_GetPhysDriveName(char * PhysDriveName, char * MountPoint)
 {
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
     int32 ReturnCode;
     int   i;
     
@@ -853,6 +860,7 @@ int32 OS_FS_GetPhysDriveName(char * PhysDriveName, char * MountPoint)
     }
 
     return ReturnCode;
+#endif
 }/* end OS_FS_GetPhysDriveName */
 
 /*-------------------------------------------------------------------------------------
@@ -864,6 +872,9 @@ int32 OS_FS_GetPhysDriveName(char * PhysDriveName, char * MountPoint)
 ---------------------------------------------------------------------------------------*/
 int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
 {
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
     /*
     ** Check to see if the path pointers are NULL
     */
@@ -906,7 +917,8 @@ int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
     #endif
 
     return OS_FS_SUCCESS;
-    
+#endif
+
 } /* end OS_TranslatePath */
 
 /*---------------------------------------------------------------------------------------
@@ -919,6 +931,9 @@ int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
 --------------------------------------------------------------------------------------- */
 int32 OS_FS_GetErrorName(int32 error_num, os_fs_err_name_t * err_name)
 {
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
     os_fs_err_name_t local_name;
     int32            return_code;
 
@@ -953,6 +968,7 @@ int32 OS_FS_GetErrorName(int32 error_num, os_fs_err_name_t * err_name)
     }
     strcpy((char*) err_name, local_name);
     return return_code;
+#endif
 }
 
 /*--------------------------------------------------------------------------------------
