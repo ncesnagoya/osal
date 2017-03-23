@@ -136,6 +136,12 @@
 int32 OS_check_name_length(const char *path);
 extern uint32 OS_FindCreator(void);
 
+uint32 getEmptyFd(void);
+int32 pathCheck( const char *path );
+int32 pathCheckAndTranslate( const char *path, const char *local_path );
+int32 checkOpenFile( const char *path, unsigned char mode );
+
+
 /****************************************************************************************
                                    GLOBAL DATA
 ****************************************************************************************/
@@ -247,12 +253,10 @@ These semaphore prepare with static API objects
 
 int32 OS_creat  (const char *path, int32 access)
 {
-    int               status;
-    rtems_status_code rtems_sc;
+    int32         ret;
+    uint32        index_fd;
     char              local_path[OS_MAX_LOCAL_PATH_LEN];
-    int               perm;
-    mode_t            mode;
-    uint32            PossibleFD;
+    BYTE          mode;
 
     /*
     ** Check to see if the path pointer is NULL
@@ -278,6 +282,13 @@ int32 OS_creat  (const char *path, int32 access)
         return OS_FS_ERR_NAME_TOO_LONG;
     }
 
+    memset( local_path, 0, sizeof( local_path ) );
+    ret = pathCheckAndTranslate( path, local_path );
+    if ( ret != OS_SUCCESS )
+    {
+        return ret;
+    }
+
     /*
     ** Check for a valid access mode
     ** For creating a file, OS_READ_ONLY does not make sense
@@ -285,70 +296,38 @@ int32 OS_creat  (const char *path, int32 access)
     switch(access)
     {
         case OS_WRITE_ONLY:
-            perm = O_WRONLY;
+            mode = FA_WRITE | FA_OPEN_ALWAYS;
             break;
         case OS_READ_WRITE:
-            perm = O_RDWR;
+            mode = FA_READ | FA_WRITE | FA_OPEN_ALWAYS;
             break;
         default:
             return OS_FS_ERROR;
     }
 
-    /*
-    ** Translate the path
-    */
-    if ( OS_TranslatePath(path, (char *)local_path) != OS_FS_SUCCESS )
+    /* Check file for already opend */
+    ret = checkOpenFile( path, mode );
+    if ( ret != OS_SUCCESS )
     {
-        return OS_FS_ERR_PATH_INVALID;
+        return ret;
     }
-  
-    
-    /* Check Parameters */
-    rtems_sc = rtems_semaphore_obtain (OS_FDTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
 
-    for ( PossibleFD = 0; PossibleFD < OS_MAX_NUM_OPEN_FILES; PossibleFD++)
-    {
-        if( OS_FDTable[PossibleFD].IsValid == FALSE)
-        {
-            break;
+    index_fd = getEmptyFd();
+    if ( index_fd == OS_MAX_NUM_OPEN_FILES ) {
+        ret = OS_FS_ERR_NO_FREE_FDS;
+    } else {
+        ret = f_open( &Fat_FDTable[index_fd], local_path, mode );
+        if ( ret == FR_OK ) {
+            /* fill in the table before returning */
+            OS_FDTable[index_fd].IsValid = TRUE;
+            OS_FDTable[index_fd].OSfd    = index_fd;
+            OS_FDTable[index_fd].User    = 0;
+            strncpy(OS_FDTable[index_fd].Path, path, OS_MAX_PATH_LEN);
+
+            ret = index_fd;
+        } else {
+            ret = OS_FS_ERROR;
         }
-    }
-
-    if (PossibleFD >= OS_MAX_NUM_OPEN_FILES)
-    {
-        rtems_sc = rtems_semaphore_release (OS_FDTableSem);
-        return OS_FS_ERR_NO_FREE_FDS;
-    }
-
-    /* 
-    ** Mark the table entry as valid so no other 
-    ** task can take that ID 
-    */
-    OS_FDTable[PossibleFD].IsValid =    TRUE;
-
-    rtems_sc = rtems_semaphore_release (OS_FDTableSem);
-
-    mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
-   
-    status =  open(local_path, perm | O_CREAT | O_TRUNC , mode); 
-
-    if (status != ERROR)
-    {
-        rtems_sc = rtems_semaphore_obtain (OS_FDTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-        /* fill in the table before returning */
-        OS_FDTable[PossibleFD].OSfd =       status;
-        strncpy(OS_FDTable[PossibleFD].Path, path, OS_MAX_PATH_LEN);
-        OS_FDTable[PossibleFD].User =       OS_FindCreator();
-        rtems_sc = rtems_semaphore_release (OS_FDTableSem);
-        return PossibleFD;
-    }
-    else
-    {
-        rtems_sc = rtems_semaphore_obtain (OS_FDTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-        /* Operation failed, so reset to false */
-        OS_FDTable[PossibleFD].IsValid = FALSE;
-        rtems_sc = rtems_semaphore_release (OS_FDTableSem);
-        return OS_FS_ERROR;
     }
 
 } /* end OS_creat */
@@ -370,11 +349,10 @@ int32 OS_creat  (const char *path, int32 access)
 
 int32 OS_open   (const char *path,  int32 access,  uint32  mode)
 {
-    int               status;
-    rtems_status_code rtems_sc;
+    int32         ret;
+    uint32        index_fd;
     char              local_path[OS_MAX_LOCAL_PATH_LEN];
-    int               perm;
-    uint32            PossibleFD;
+    BYTE          mode;
     
     /*
     ** Check to see if the path pointer is NULL
@@ -400,77 +378,54 @@ int32 OS_open   (const char *path,  int32 access,  uint32  mode)
         return OS_FS_ERR_NAME_TOO_LONG;
     }
    
+    memset( local_path, 0, sizeof( local_path ) );
+    ret = pathCheckAndTranslate( path, local_path );
+    if ( ret != OS_SUCCESS )
+    {
+        return ret;
+    }
+
     /*
     ** Check for a valid access mode
     */
     switch(access)
     {
         case OS_READ_ONLY:
-            perm = O_RDONLY;
+            mode = FA_READ;
             break;
         case OS_WRITE_ONLY:
-            perm = O_WRONLY | O_CREAT;
+            mode = FA_WRITE | FA_OPEN_ALWAYS;
             break;
         case OS_READ_WRITE:
-            perm = O_RDWR | O_CREAT;
+            mode = FA_READ | FA_WRITE | FA_OPEN_ALWAYS;
             break;
         default:
             return OS_FS_ERROR;
     }
 
-    /*
-    ** Translate the path
-    */
-    if ( OS_TranslatePath(path, (char *)local_path) != OS_FS_SUCCESS )
+    /* Check file for already opend */
+    ret = checkOpenFile( path, mode );
+    if ( ret != OS_SUCCESS )
     {
-        return OS_FS_ERR_PATH_INVALID;
+        return ret;
     }
-    
-   rtems_sc = rtems_semaphore_obtain (OS_FDTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
 
-    for ( PossibleFD = 0; PossibleFD < OS_MAX_NUM_OPEN_FILES; PossibleFD++)
-    {
-        if( OS_FDTable[PossibleFD].IsValid == FALSE)
-        {
-            break;
+    index_fd = getEmptyFd();
+    if ( index_fd == OS_MAX_NUM_OPEN_FILES ) {
+        ret = OS_FS_ERR_NO_FREE_FDS;
+    } else {
+        ret = f_open( &Fat_FDTable[index_fd], local_path, mode );
+        if ( ret == FR_OK ) {
+            /* fill in the table before returning */
+            OS_FDTable[index_fd].IsValid = TRUE;
+            OS_FDTable[index_fd].OSfd    = index_fd;
+            OS_FDTable[index_fd].User    = 0;
+            strncpy(OS_FDTable[index_fd].Path, path, OS_MAX_PATH_LEN);
+
+            ret = index_fd;
+        } else {
+            ret = OS_FS_ERROR;
         }
-    }
-
-    if (PossibleFD >= OS_MAX_NUM_OPEN_FILES)
-    {
-        rtems_sc = rtems_semaphore_release (OS_FDTableSem);
-        return OS_FS_ERR_NO_FREE_FDS;
-    }
-
-    /* 
-    ** Mark the table entry as valid so no other 
-    ** task can take that ID 
-    */
-    OS_FDTable[PossibleFD].IsValid = TRUE;
-
-    rtems_sc = rtems_semaphore_release (OS_FDTableSem);
-
-    /* open the file  */
-    status =  open(local_path, perm, mode);
-
-    if (status != ERROR)
-    {
-        rtems_sc = rtems_semaphore_obtain (OS_FDTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-        /* fill in the table before returning */
-        OS_FDTable[PossibleFD].OSfd =       status;
-        strncpy(OS_FDTable[PossibleFD].Path, path, OS_MAX_PATH_LEN);
-        OS_FDTable[PossibleFD].User =       OS_FindCreator();
-        rtems_sc = rtems_semaphore_release (OS_FDTableSem);
-        
-        return PossibleFD;
-    }
-    else
-    {
-        rtems_sc = rtems_semaphore_obtain (OS_FDTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-        /* Operation failed, so reset to false */
-        OS_FDTable[PossibleFD].IsValid = FALSE;
-        rtems_sc = rtems_semaphore_release (OS_FDTableSem);
-        return OS_FS_ERROR;
     }
  
 } /* end OS_open */
@@ -1367,9 +1322,6 @@ int32  OS_rmdir (const char *path)
 
 int32 OS_check_name_length(const char *path)
 {
-#if 1
-    return OS_ERR_NOT_IMPLEMENTED;
-#else
     char* name_ptr;
     char* end_of_path;
     int name_len;
@@ -1407,7 +1359,6 @@ int32 OS_check_name_length(const char *path)
     }
     
     return OS_FS_SUCCESS;
-#endif
 
 }/* end OS_check_name_length */
 /* --------------------------------------------------------------------------------------
@@ -1716,4 +1667,89 @@ int32 OS_CloseAllFiles(void)
 #endif
 
 }/* end OS_CloseAllFiles */
+
+/**************************************/
+/*  Local functions                   */
+/**************************************/
+uint32 getEmptyFd(void)
+{
+    uint32 cnt;
+
+    for ( cnt = 0 ; cnt < OS_MAX_NUM_OPEN_FILES ; cnt++ ) {
+        if ( OS_FDTable[cnt].IsValid == FALSE ) {
+            break;
+        }
+    }
+
+    return cnt;
+}
+
+int32 pathCheck( const char *path )
+{
+    if (path == NULL)
+    {
+        return OS_FS_ERR_INVALID_POINTER;
+    }
+   
+    /*
+    ** Check to see if the path is too long
+    */
+    if (strlen(path) >= OS_MAX_PATH_LEN)
+    {
+        return OS_FS_ERR_PATH_TOO_LONG;
+    }
+
+    /* 
+    ** check if the name of the file is too long 
+    */
+    if (OS_check_name_length(path) != OS_FS_SUCCESS)
+    {
+        return OS_FS_ERR_NAME_TOO_LONG;
+    }
+
+    return OS_SUCCESS;
+}
+
+int32 pathCheckAndTranslate( const char *path, const char *local_path )
+{
+    int32  ret;
+
+    ret = pathCheck( path );
+    if ( ret != OS_SUCCESS )
+    {
+        return ret;
+    }
+
+    /*
+    ** Translate the path
+    */
+    if ( OS_TranslatePath(path, (char *)local_path) != OS_FS_SUCCESS )
+    {
+        return OS_FS_ERR_PATH_INVALID;
+    }
+
+    return OS_SUCCESS;
+}
+
+
+int32 checkOpenFile( const char *path, unsigned char mode )
+{
+    int32 cnt;
+    for ( cnt = 0 ; cnt < OS_MAX_NUM_OPEN_FILES ; cnt++ ) {
+        if ( OS_FDTable[cnt].IsValid == TRUE &&
+             strcmp( OS_FDTable[cnt].Path, path ) == 0 ) {
+            break;
+        }
+    }
+
+    if ( cnt < OS_MAX_NUM_OPEN_FILES ) {
+        if ( ( Fat_FDTable[cnt].flag & FA_WRITE ) ||
+             ( mode & FA_WRITE ) ) {
+
+            return OS_ERR_NAME_TAKEN;
+        }
+    }
+
+    return OS_SUCCESS;
+}
 
