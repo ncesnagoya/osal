@@ -168,9 +168,9 @@ tOpenDirTable saOpenDir[OS_MAX_NUM_OPEN_FILES];
 ****************************************************************************************/
 int32 OS_FS_Init(void)
 {
-    int               i;
+    int i;
     rtems_status_code rtems_sc;
-	
+
     /* Initialize the file system constructs */
     for (i =0; i < OS_MAX_NUM_OPEN_FILES; i++)
     {
@@ -337,7 +337,7 @@ int32 OS_creat  (const char *path, int32 access)
         rtems_sc = rtems_semaphore_release (OS_FDTableSem);
         return OS_FS_ERROR;
     }
- 
+
 } /* end OS_creat */
 
 /*--------------------------------------------------------------------------------------
@@ -626,6 +626,9 @@ int32 OS_chmod  (const char *path, uint32 access)
 
 int32 OS_stat   (const char *path, os_fstat_t  *filestats)
 {
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
     int ret_val;
     char local_path[OS_MAX_LOCAL_PATH_LEN];
   
@@ -662,7 +665,8 @@ int32 OS_stat   (const char *path, os_fstat_t  *filestats)
     {
         return OS_FS_SUCCESS;
     }
-    
+#endif
+
 } /* end OS_stat */
 
 /*--------------------------------------------------------------------------------------
@@ -1274,10 +1278,14 @@ os_dirent_t *  OS_readdir (os_dirp_t directory)
 
 void  OS_rewinddir (os_dirp_t directory )
 { 
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
     if (directory != NULL)
     {
        rewinddir( directory);
     }
+#endif
 }
 /*--------------------------------------------------------------------------------------
     Name: OS_rmdir
@@ -1346,6 +1354,9 @@ int32  OS_rmdir (const char *path)
 
 int32 OS_check_name_length(const char *path)
 {
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
     char* name_ptr;
     char* end_of_path;
     int name_len;
@@ -1383,6 +1394,7 @@ int32 OS_check_name_length(const char *path)
     }
     
     return OS_FS_SUCCESS;
+#endif
     
 }/* end OS_check_name_length */
 /* --------------------------------------------------------------------------------------
@@ -1396,6 +1408,9 @@ int32 OS_check_name_length(const char *path)
  ---------------------------------------------------------------------------------------*/
 int32 OS_ShellOutputToFile(char* Cmd, int32 OS_fd)
 {
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
     int32              cmdFd;
     int32              tmpFd;
     rtems_status_code  rtemsRc;;
@@ -1506,7 +1521,7 @@ int32 OS_ShellOutputToFile(char* Cmd, int32 OS_fd)
     }
  
     return ReturnCode;
-
+#endif
 }/* end OS_ShellOutputToFile */
 
 /* --------------------------------------------------------------------------------------
@@ -1550,6 +1565,9 @@ int32 OS_FDGetInfo (int32 filedes, OS_FDTableEntry *fd_prop)
  ---------------------------------------------------------------------------------------*/
 int32 OS_FileOpenCheck(char *Filename)
 {
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
     rtems_status_code rtems_sc;
     uint32            i;
 
@@ -1571,6 +1589,7 @@ int32 OS_FileOpenCheck(char *Filename)
 
     rtems_sc = rtems_semaphore_release (OS_FDTableSem);
     return OS_FS_ERROR;
+#endif
 
 }/* end OS_FileOpenCheck */
 
@@ -1587,6 +1606,9 @@ int32 OS_FileOpenCheck(char *Filename)
  ---------------------------------------------------------------------------------------*/
 int32 OS_CloseFileByName(char *Filename)
 {
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
     rtems_status_code rtems_sc;
     uint32            i;
     int               status;
@@ -1628,6 +1650,7 @@ int32 OS_CloseFileByName(char *Filename)
     }/* end for */
 
     return (OS_FS_ERR_PATH_INVALID);
+#endif
 
 }/* end OS_CloseFileByName */
 
@@ -1641,6 +1664,9 @@ int32 OS_CloseFileByName(char *Filename)
  ---------------------------------------------------------------------------------------*/
 int32 OS_CloseAllFiles(void)
 {
+#if 1
+    return OS_ERR_NOT_IMPLEMENTED;
+#else
     rtems_status_code rtems_sc;
     uint32            i;
     int32             return_status = OS_FS_SUCCESS;
@@ -1674,6 +1700,7 @@ int32 OS_CloseAllFiles(void)
     }/* end for */
 
     return (return_status);
+#endif
 
 }/* end OS_CloseAllFiles */
 
