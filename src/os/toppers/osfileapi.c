@@ -540,6 +540,7 @@ int32 OS_read  (int32  filedes, void *buffer, uint32 nbytes)
 int32 OS_write (int32  filedes, void *buffer, uint32 nbytes)
 {
     int32 status;
+    UINT            write_size;
 
     if (buffer == NULL)
     {
@@ -553,11 +554,11 @@ int32 OS_write (int32  filedes, void *buffer, uint32 nbytes)
     }
     else
     {
-        status = write(OS_FDTable[filedes].OSfd, buffer, nbytes );
+        status = f_write(&Fat_FDTable[filedes], buffer, nbytes, &write_size );
     
-        if (status != ERROR)
+        if (status == FR_OK)
         {
-            return  status;
+            return  write_size;
         }
         else
         {
