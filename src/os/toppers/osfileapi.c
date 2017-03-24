@@ -747,6 +747,7 @@ int32 OS_remove (const char *path)
     /*
     ** Translate the path
     */
+    memset( local_path, 0, sizeof( local_path ) );
     if ( OS_TranslatePath(path, (char *)local_path) != OS_FS_SUCCESS )
     {
         return OS_FS_ERR_PATH_INVALID;
@@ -755,8 +756,8 @@ int32 OS_remove (const char *path)
     /*
     ** Call the system to remove the file
     */
-    status = remove (local_path);
-    if (status == 0)
+    status = f_unlink (local_path);
+    if (status == FR_OK)
     {
         return OS_FS_SUCCESS;
     }
@@ -836,8 +837,10 @@ int32 OS_rename (const char *old_filename, const char *new_filename)
         return OS_FS_ERR_PATH_INVALID;
     }
      
-    status = rename (old_path, new_path);
-    if (status == 0)
+    memset( (char *)old_path, 0, sizeof( old_path ) );
+    memset( (char *)new_path, 0, sizeof( new_path ) );
+    status = f_rename (old_path, new_path);
+    if (status == FR_OK)
     {
         for ( i =0; i < OS_MAX_NUM_OPEN_FILES; i++) 
         {
@@ -848,6 +851,9 @@ int32 OS_rename (const char *old_filename, const char *new_filename)
             } 
         }
         return OS_FS_SUCCESS;
+    }
+    else if (status == FR_NO_FILE) {
+        return OS_FS_ERR_PATH_INVALID;
     }
     else
     {
