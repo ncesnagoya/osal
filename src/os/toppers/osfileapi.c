@@ -110,6 +110,7 @@
 #include <kernel.h>
 #include "ff.h"
 #include "ffconf.h"
+#include "kernel_cfg.h"
 
 #include "common_types.h"
 #include "osapi.h"
@@ -444,7 +445,6 @@ int32 OS_open   (const char *path,  int32 access,  uint32  mode)
 int32 OS_close (int32  filedes)
 {
     int               status;
-    rtems_status_code rtems_sc;
 
     /* Make sure the file descriptor is legit before using it */
     if (filedes < 0 || filedes >= OS_MAX_NUM_OPEN_FILES || OS_FDTable[filedes].IsValid == FALSE)
@@ -453,32 +453,32 @@ int32 OS_close (int32  filedes)
     }
     else
     {    
-        status = close ((int) OS_FDTable[filedes].OSfd);
-        if (status == ERROR)
+        status = f_close( &Fat_FDTable[filedes] );
+        if (status != FR_OK)
         {
             /*
             ** Remove the file from the OSAL list
             ** to free up that slot 
             */
             /* fill in the table before returning */
-            rtems_sc = rtems_semaphore_obtain (OS_FDTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+            wai_sem(OSAL_FDTableSem);
             OS_FDTable[filedes].OSfd =       -1;
             strcpy(OS_FDTable[filedes].Path, "\0");
             OS_FDTable[filedes].User =       0;
             OS_FDTable[filedes].IsValid =    FALSE;
-            rtems_sc = rtems_semaphore_release (OS_FDTableSem);
+            sig_sem(OSAL_FDTableSem);
 
             return OS_FS_ERROR;
         }
         else
         {
             /* fill in the table before returning */
-            rtems_sc = rtems_semaphore_obtain (OS_FDTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+            wai_sem(OSAL_FDTableSem);
             OS_FDTable[filedes].OSfd =       -1;
             strcpy(OS_FDTable[filedes].Path, "\0");
             OS_FDTable[filedes].User =       0;
             OS_FDTable[filedes].IsValid =    FALSE;
-            rtems_sc = rtems_semaphore_release (OS_FDTableSem);
+            sig_sem(OSAL_FDTableSem);
             
             return OS_FS_SUCCESS;
         }
