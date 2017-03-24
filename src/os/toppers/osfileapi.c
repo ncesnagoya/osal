@@ -1166,7 +1166,8 @@ int32 OS_mkdir (const char *path, uint32 access)
 os_dirp_t OS_opendir (const char *path)
 {
 
-    os_dirp_t dirdescptr;
+    //os_dirp_t dirdescptr;
+    UINT dirindex;
     char local_path[OS_MAX_LOCAL_PATH_LEN];
 
     /*
@@ -1193,12 +1194,24 @@ os_dirp_t OS_opendir (const char *path)
         return NULL;
     }
    
-    dirdescptr = opendir( (char*) local_path);
+    for ( dirindex = 0 ; dirindex < OS_MAX_NUM_OPEN_FILES ; dirindex++ ) {
+        if ( saOpenDir[dirindex].dir.obj.fs == NULL ) {
+            break;
+        }
+    }
+    if ( dirindex == OS_MAX_NUM_OPEN_FILES ) {
+        return NULL;
+    }
    
+    if ( f_opendir( &saOpenDir[dirindex].dir, local_path ) == FR_OK ) {
+        return &saOpenDir[dirindex].dir;
+    } else {
+        return NULL;
+    }
     /*
     ** will return a dirptr or NULL
     */ 
-    return dirdescptr;
+//    return dirdescptr;
     
 } /* end OS_opendir */
 
