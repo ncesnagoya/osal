@@ -1113,7 +1113,6 @@ int32 OS_mv (const char *src, const char *dest)
 int32 OS_mkdir (const char *path, uint32 access)
 {
    int status;
-   mode_t mode;
    char local_path[OS_MAX_LOCAL_PATH_LEN];
 
     /*
@@ -1141,8 +1140,7 @@ int32 OS_mkdir (const char *path, uint32 access)
         return OS_FS_ERR_PATH_INVALID;
     }
     
-    mode = S_IFDIR |S_IRWXU | S_IRWXG | S_IRWXO;
-    status = mkdir(local_path, mode);
+    status = f_mkdir(local_path);
 
     if (status == 0)
     {
