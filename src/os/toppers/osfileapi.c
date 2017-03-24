@@ -652,8 +652,7 @@ int32 OS_stat   (const char *path, os_fstat_t  *filestats)
 
 int32 OS_lseek  (int32  filedes, int32 offset, uint32 whence)
 {
-     off_t status;
-     int where;
+     FRESULT status;
 
     /* Make sure the file descriptor is legit before using it */
     if (filedes < 0 || filedes >= OS_MAX_NUM_OPEN_FILES || OS_FDTable[filedes].IsValid == FALSE)
@@ -665,22 +664,19 @@ int32 OS_lseek  (int32  filedes, int32 offset, uint32 whence)
         switch(whence)
         {
             case OS_SEEK_SET:
-                where = SEEK_SET;
                 break;
             case OS_SEEK_CUR:
-                where = SEEK_CUR;
-                break;
             case OS_SEEK_END:
-                where = SEEK_END;
+                return OS_ERR_NOT_IMPLEMENTED;
                 break;
             default:
                 return OS_FS_ERROR;
         }
 
     
-        status = lseek( OS_FDTable[filedes].OSfd, (off_t) offset, (int) where );
+        status = f_lseek( &Fat_FDTable[filedes], offset );
 
-        if ( (int) status != ERROR)
+        if (status == FR_OK)
         {
             return (int32) status;
         }
