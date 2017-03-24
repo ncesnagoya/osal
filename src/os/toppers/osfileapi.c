@@ -500,6 +500,7 @@ int32 OS_close (int32  filedes)
 int32 OS_read  (int32  filedes, void *buffer, uint32 nbytes)
 {
     int32 status;
+    UINT            read_size;
 
     if (buffer == NULL)
     {
@@ -513,14 +514,14 @@ int32 OS_read  (int32  filedes, void *buffer, uint32 nbytes)
     }
     else
     { 
-        status = read (OS_FDTable[filedes].OSfd, buffer, nbytes);
-        if (status == ERROR)
+        status = f_read( &Fat_FDTable[filedes], buffer, nbytes, &read_size);
+        if (status == FR_OK)
         {
-            return OS_FS_ERROR;
+            return read_size;
         }
     }
 
-    return status;
+    return OS_FS_ERROR;
     
 }/* end OS_read */
 
