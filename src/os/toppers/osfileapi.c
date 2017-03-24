@@ -1257,19 +1257,35 @@ int32 OS_closedir (os_dirp_t directory)
 
 os_dirent_t *  OS_readdir (os_dirp_t directory)
 { 
-    os_dirent_t *tempptr;
+    //os_dirent_t *tempptr;
+    UINT    index;
 
     if (directory == NULL)
     {
         return NULL;
     }
 
-    tempptr = readdir( directory);
-   
+    for ( index = 0 ; index < OS_MAX_NUM_OPEN_FILES ; index++ ) {
+        if ( &saOpenDir[index].dir == directory ) {
+            break;
+        }
+    }
+    if ( index == OS_MAX_NUM_OPEN_FILES ) {
+        return NULL;
+    }
+
+    if ( f_readdir( &saOpenDir[index].dir, &saOpenDir[index].file ) == FR_OK ) {
+        memcpy( saOpenDir[index].direntry.d_name,
+                saOpenDir[index].file.fname,
+                strlen( saOpenDir[index].file.fname ) );
+        return &saOpenDir[index].direntry;
+    } else {
+        return NULL;
+    }
     /* 
     ** Will return dirptr or NULL
     */ 
-    return tempptr;
+    //return tempptr;
         
 } /* end OS_readdir */
 
