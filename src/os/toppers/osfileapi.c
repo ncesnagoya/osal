@@ -352,7 +352,7 @@ int32 OS_open   (const char *path,  int32 access,  uint32  mode)
     int32         ret;
     uint32        index_fd;
     char              local_path[OS_MAX_LOCAL_PATH_LEN];
-    BYTE          mode;
+    BYTE          perm;
     
     /*
     ** Check to see if the path pointer is NULL
@@ -391,20 +391,20 @@ int32 OS_open   (const char *path,  int32 access,  uint32  mode)
     switch(access)
     {
         case OS_READ_ONLY:
-            mode = FA_READ;
+            perm = FA_READ;
             break;
         case OS_WRITE_ONLY:
-            mode = FA_WRITE | FA_OPEN_ALWAYS;
+            perm = FA_WRITE | FA_OPEN_ALWAYS;
             break;
         case OS_READ_WRITE:
-            mode = FA_READ | FA_WRITE | FA_OPEN_ALWAYS;
+            perm = FA_READ | FA_WRITE | FA_OPEN_ALWAYS;
             break;
         default:
             return OS_FS_ERROR;
     }
 
     /* Check file for already opend */
-    ret = checkOpenFile( path, mode );
+    ret = checkOpenFile( path, perm );
     if ( ret != OS_SUCCESS )
     {
         return ret;
@@ -414,7 +414,7 @@ int32 OS_open   (const char *path,  int32 access,  uint32  mode)
     if ( index_fd == OS_MAX_NUM_OPEN_FILES ) {
         ret = OS_FS_ERR_NO_FREE_FDS;
     } else {
-        ret = f_open( &Fat_FDTable[index_fd], local_path, mode );
+        ret = f_open( &Fat_FDTable[index_fd], local_path, perm );
         if ( ret == FR_OK ) {
             /* fill in the table before returning */
             OS_FDTable[index_fd].IsValid = TRUE;
