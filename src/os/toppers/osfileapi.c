@@ -1233,8 +1233,8 @@ int32 OS_closedir (os_dirp_t directory)
         return OS_FS_ERR_INVALID_POINTER;
     }
 
-    status = closedir(directory);
-    if (status == 0)
+    status = f_closedir(directory);
+    if (status == FR_OK)
     {
         return OS_FS_SUCCESS;
     }
