@@ -884,8 +884,10 @@ int32 OS_cp (const char *src, const char *dest)
     char src_path[OS_MAX_LOCAL_PATH_LEN];
     char dest_path[OS_MAX_LOCAL_PATH_LEN];
     char data_buffer[512];
-    int  bytes_read;
-    int  bytes_written;
+    UINT  bytes_read;
+    UINT  bytes_written;
+    UINT status;
+    UINT index_fd;
 
     /*
     ** Check to see if the path pointers are NULL
@@ -954,30 +956,50 @@ int32 OS_cp (const char *src, const char *dest)
     /*
     ** Do the copy
     */
-    if((src_fd = open(src_path, O_RDONLY)) == -1) 
+    index_fd = getEmptyFd();
+    if ( index_fd == OS_MAX_NUM_OPEN_FILES ) {
+        return OS_FS_ERR_NO_FREE_FDS;
+    } else {
+        if ( f_open(&Fat_FDTable[index_fd], src_path, FA_READ) == FR_OK ) {
+            OS_FDTable[index_fd].IsValid = TRUE;
+            OS_FDTable[index_fd].OSfd    = index_fd;
+            OS_FDTable[index_fd].User    = 0;
+            strncpy(OS_FDTable[index_fd].Path, src_path, OS_MAX_PATH_LEN);
+            src_fd = index_fd;
+        } 
     {
        return OS_FS_ERR_PATH_INVALID;
     }
 
-    if((dest_fd = open(dest_path, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1)
+    index_fd = getEmptyFd();
+    if ( index_fd == OS_MAX_NUM_OPEN_FILES ) {
+        return OS_FS_ERR_NO_FREE_FDS;
+    } else {
+        if ( f_open(&Fat_FDTable[index_fd], dest_path, FA_WRITE) == FR_OK) {
+            OS_FDTable[index_fd].IsValid = TRUE;
+            OS_FDTable[index_fd].OSfd    = index_fd;
+            OS_FDTable[index_fd].User    = 0;
+            strncpy(OS_FDTable[index_fd].Path, dest_path, OS_MAX_PATH_LEN);
+            dest_fd = index_fd;
+        }
     {
-       close(src_fd);
+       f_close(&Fat_FDTable[src_fd]);
        return OS_FS_ERR_PATH_INVALID;
     }
  
-    while((bytes_read = read(src_fd, data_buffer, sizeof(data_buffer))) > 0)
+    while( f_read( &Fat_FDTable[src_fd], data_buffer, sizeof(data_buffer), &bytes_read) == FR_OK )
     {
-       bytes_written = write(dest_fd, data_buffer, bytes_read);
+       status = f_write(&Fat_FDTable[dest_fd], data_buffer, bytes_read, &bytes_written);
        if ( bytes_written < 0 )
        {
-          close(src_fd);
-          close(dest_fd);
+          f_close(&Fat_FDTable[src_fd]);
+          f_close(&Fat_FDTable[dest_fd]);
           return OS_FS_ERROR;
        }
     }
 
-    close(src_fd);
-    close(dest_fd);
+    f_close(&Fat_FDTable[src_fd]);
+    f_close(&Fat_FDTable[dest_fd]);
 
     if ( bytes_read < 0 )
     {
