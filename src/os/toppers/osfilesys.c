@@ -353,7 +353,6 @@ int32 OS_initfs (char *address,char *devname, char *volname,
 {
     int               i;
     int32             ReturnCode;
-    rtems_status_code rtems_sc;
 
     if ( devname == NULL || volname == NULL )
     {
@@ -368,7 +367,8 @@ int32 OS_initfs (char *address,char *devname, char *volname,
     /*
     ** Lock 
     */
-    rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    wai_sem(OSAL_VolumeTableSem);
 
     /* find an open entry in the Volume Table */
     for (i = 0; i < NUM_TABLE_ENTRIES; i++)
@@ -380,7 +380,8 @@ int32 OS_initfs (char *address,char *devname, char *volname,
 
     if (i >= NUM_TABLE_ENTRIES)
     {
-        rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+        //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+        sig_sem(OSAL_VolumeTableSem);
         return OS_FS_ERR_DEVICE_NOT_FREE;
     }
 
@@ -395,8 +396,10 @@ int32 OS_initfs (char *address,char *devname, char *volname,
         /*
         ** Create the RAM disk device. Do not erase the disk! 
         */
-        ReturnCode = rtems_setup_ramdisk (OS_VolumeTable[i].PhysDevName, (uint32 *) address, 
-                                          blocksize, numblocks);
+        //ReturnCode = rtems_setup_ramdisk (OS_VolumeTable[i].PhysDevName, (uint32 *) address, 
+        //                                  blocksize, numblocks);
+        disk_setArea( i, (DWORD)address, numblocks, blocksize );
+        disk_initialize( i );
         if ( ReturnCode != OS_FS_SUCCESS )
         {
            ReturnCode = OS_FS_ERR_DRIVE_NOT_CREATED;
@@ -434,7 +437,8 @@ int32 OS_initfs (char *address,char *devname, char *volname,
     /*
     ** Unlock
     */
-    rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+    //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+    sig_sem(OSAL_VolumeTableSem);
 
     return(ReturnCode);
  

@@ -971,7 +971,7 @@ int32 OS_cp (const char *src, const char *dest)
             strncpy(OS_FDTable[index_fd].Path, src_path, OS_MAX_PATH_LEN);
             src_fd = index_fd;
         } 
-       return OS_FS_ERR_PATH_INVALID;
+        return OS_FS_ERR_PATH_INVALID;
     }
 
     index_fd = getEmptyFd();
@@ -988,10 +988,10 @@ int32 OS_cp (const char *src, const char *dest)
             strncpy(OS_FDTable[index_fd].Path, dest_path, OS_MAX_PATH_LEN);
             dest_fd = index_fd;
         } else 
-    {
-       f_close(&Fat_FDTable[src_fd]);
-       return OS_FS_ERR_PATH_INVALID;
-    }
+        {
+           f_close(&Fat_FDTable[src_fd]);
+           return OS_FS_ERR_PATH_INVALID;
+        }
     }
  
     while( f_read( &Fat_FDTable[src_fd], data_buffer, sizeof(data_buffer), &bytes_read) == FR_OK )
