@@ -351,97 +351,8 @@ int32 OS_rmfs (char *devname)
 int32 OS_initfs (char *address,char *devname, char *volname, 
                 uint32 blocksize, uint32 numblocks)
 {
-    int               i;
-    int32             ReturnCode;
+  return OS_mkfs (address, devname, volname, blocksize, numblocks);
 
-    if ( devname == NULL || volname == NULL )
-    {
-        return OS_FS_ERR_INVALID_POINTER;
-    }
-
-    if( strlen(devname) >= OS_FS_DEV_NAME_LEN || strlen(volname) >= OS_FS_VOL_NAME_LEN)
-    {
-        return OS_FS_ERR_PATH_TOO_LONG;
-    }
- 
-    /*
-    ** Lock 
-    */
-    //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-    wai_sem(OSAL_VolumeTableSem);
-
-    /* find an open entry in the Volume Table */
-    for (i = 0; i < NUM_TABLE_ENTRIES; i++)
-    {
-        if (OS_VolumeTable[i].FreeFlag == TRUE && OS_VolumeTable[i].IsMounted == FALSE
-            && strcmp(OS_VolumeTable[i].DeviceName, devname) == 0)
-            break;
-    }
-
-    if (i >= NUM_TABLE_ENTRIES)
-    {
-        //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-        sig_sem(OSAL_VolumeTableSem);
-        return OS_FS_ERR_DEVICE_NOT_FREE;
-    }
-
-    /*
-    ** Initialize the RAM disk.
-    */    
-    if (OS_VolumeTable[i].VolumeType == RAM_DISK)
-    {
-        #ifdef OS_DEBUG_PRINTF
-           printf("OSAL: Re-Initializing a RAM disk at: 0x%08X\n",(unsigned int)address );
-        #endif
-        /*
-        ** Create the RAM disk device. Do not erase the disk! 
-        */
-        //ReturnCode = rtems_setup_ramdisk (OS_VolumeTable[i].PhysDevName, (uint32 *) address, 
-        //                                  blocksize, numblocks);
-        disk_setArea( i, (DWORD)address, numblocks, blocksize );
-        disk_initialize( i );
-        if ( ReturnCode != OS_FS_SUCCESS )
-        {
-           ReturnCode = OS_FS_ERR_DRIVE_NOT_CREATED;
-        }
-        else
-        {
-            /*
-            ** Success
-            */
-            OS_VolumeTable[i].FreeFlag = FALSE;
-            strcpy(OS_VolumeTable[i].VolumeName, volname);
-            OS_VolumeTable[i].BlockSize = blocksize;
-            ReturnCode = OS_FS_SUCCESS;
-        }
-    }
-    else if (OS_VolumeTable[i].VolumeType == FS_BASED)
-    {
-       /* now enter the info in the table */
-       OS_VolumeTable[i].FreeFlag = FALSE;
-       strcpy(OS_VolumeTable[i].VolumeName, volname);
-       OS_VolumeTable[i].BlockSize = blocksize;
-    
-       /* note we don't know the mount point yet */
-           
-       ReturnCode = OS_FS_SUCCESS;
-    }   
-    else
-    {
-        /* 
-        ** VolumeType is something else that is not supported right now 
-        */
-        ReturnCode = OS_FS_ERROR;
-    }
-
-    /*
-    ** Unlock
-    */
-    //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-    sig_sem(OSAL_VolumeTableSem);
-
-    return(ReturnCode);
- 
 }/* end OS_initfs */
 
 /*--------------------------------------------------------------------------------------
@@ -587,9 +498,9 @@ int32 OS_fsBlocksFree (const char *name)
 
    int               status;
    int32             NameStatus;
-   struct statvfs    stat_buf;
-   rtems_status_code rtems_sc;
    char              tmpFileName[OS_MAX_LOCAL_PATH_LEN +1];
+   DWORD           cluster;
+   FATFS           *fs;
    
    if ( name == NULL )
    {
@@ -613,18 +524,20 @@ int32 OS_fsBlocksFree (const char *name)
    /*
    ** Lock 
    */
-   rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+   //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+   wai_sem(OSAL_VolumeTableSem);
 
-   status = statvfs(tmpFileName, &stat_buf);
+   status = f_getfree( tmpFileName, &cluster, &fs );
    
    /*
    ** Unlock
    */
-   rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+   //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+   sig_sem(OSAL_VolumeTableSem);
 
-   if ( status == 0 )
+   if ( status == FR_OK )
    {
-      return(stat_buf.f_bfree);
+      return(cluster);
    }
    else 
    {
@@ -786,7 +699,7 @@ int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
     char devname [OS_MAX_PATH_LEN];
     char filename[OS_MAX_PATH_LEN];
     int  NumChars;
-    int  i=0;
+    //int  i=0;
 
     /*
     ** Check to see if the path pointers are NULL
