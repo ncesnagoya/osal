@@ -1299,9 +1299,7 @@ os_dirent_t *  OS_readdir (os_dirp_t directory)
 
 void  OS_rewinddir (os_dirp_t directory )
 { 
-#if 1
-    return OS_ERR_NOT_IMPLEMENTED;
-#else
+#if 0
     if (directory != NULL)
     {
        rewinddir( directory);
