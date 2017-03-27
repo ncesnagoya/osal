@@ -192,9 +192,7 @@ int32 OS_mkfs (char *address, char *devname,char * volname, uint32 blocksize,
                uint32 numblocks)
 {
     int                     i;
-    uint32                  ReturnCode;
-    rtems_rfs_format_config config;
-    rtems_status_code       rtems_sc;
+    int32                  ReturnCode;
 
     /*
     ** Check parameters
@@ -212,7 +210,8 @@ int32 OS_mkfs (char *address, char *devname,char * volname, uint32 blocksize,
     /*
     ** Lock 
     */
-    rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    wai_sem(OSAL_VolumeTableSem);
 
     /* find an open entry in the Volume Table */
     for (i = 0; i < NUM_TABLE_ENTRIES; i++)
@@ -224,65 +223,37 @@ int32 OS_mkfs (char *address, char *devname,char * volname, uint32 blocksize,
 
     if (i >= NUM_TABLE_ENTRIES)
     {
-        rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+        //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+        sig_sem(OSAL_VolumeTableSem);
         return OS_FS_ERR_DEVICE_NOT_FREE;
     }
 
-    /*
-    ** Create the RAM disk and format it with the RFS file system.
-    ** This requires RTEMS 4.10
-    */    
     if (OS_VolumeTable[i].VolumeType == RAM_DISK)
     {
-        /*
-        ** Create the RAM disk device 
-        */
-        ReturnCode = rtems_setup_ramdisk (OS_VolumeTable[i].PhysDevName, (uint32 *)address, 
-                                          blocksize, numblocks);
-        if ( ReturnCode == OS_FS_ERROR )
-        {
-           ReturnCode = OS_FS_ERR_DRIVE_NOT_CREATED;
-        }
-        else
-        {
-           /*
-           ** Format the RAM disk with the RFS file system
-           */
-           memset (&config, 0, sizeof(rtems_rfs_format_config));
-           if ( rtems_rfs_format ( OS_VolumeTable[i].PhysDevName, &config ) < 0 )
-           {
-              #ifdef OS_DEBUG_PRINTF
-                 printf("OSAL: Error: RFS format of %s failed: %s\n",
-                        OS_VolumeTable[i].PhysDevName, strerror(errno));
-              #endif
-              ReturnCode = OS_FS_ERR_DRIVE_NOT_CREATED;
-           }
-           else
-           {
-              /*
-              ** Success
-              */
-              OS_VolumeTable[i].FreeFlag = FALSE;
-              strcpy(OS_VolumeTable[i].VolumeName, volname);
-              OS_VolumeTable[i].BlockSize = blocksize;
-              ReturnCode = OS_FS_SUCCESS;
-           }
-        }
-    }
-    else if (OS_VolumeTable[i].VolumeType == FS_BASED)
-    {
-       /*
-       ** FS_BASED will map the OSAL Volume to an already mounted host filesystem
-       */
-       
-       /* 
-       ** Enter the info in the table 
-       */
-       OS_VolumeTable[i].FreeFlag = FALSE;
-       strcpy(OS_VolumeTable[i].VolumeName, volname);
-       OS_VolumeTable[i].BlockSize = blocksize;
+      disk_setArea( i, (DWORD)address, numblocks, blocksize );
+      disk_initialize( i );
+      if ( f_mount( &FatFs_entity[i], "", 0 ) == FR_OK)
+      {
+          if(f_mkfs( "", FM_ANY, 0, Fatfswork, sizeof(Fatfswork) ) == FR_OK)
+          {
+           /* now enter the info in the table */
+           OS_VolumeTable[i].FreeFlag = FALSE;
+           strcpy(OS_VolumeTable[i].VolumeName, volname);
+           OS_VolumeTable[i].BlockSize = blocksize;
 
-       ReturnCode = OS_FS_SUCCESS;
+           ReturnCode = OS_FS_SUCCESS;
+          }
+          else
+          {
+            disk_setArea( i, 0, 0, 0 );
+
+            ReturnCode = OS_FS_ERROR;
+          }
+      }
+      else
+      {
+        ReturnCode = OS_FS_ERROR;
+      }
     }
     else
     {
@@ -295,7 +266,8 @@ int32 OS_mkfs (char *address, char *devname,char * volname, uint32 blocksize,
     /*
     ** Unlock
     */
-    rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+    //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+    sig_sem(OSAL_VolumeTableSem);
 
     return ReturnCode; 
        
@@ -314,7 +286,6 @@ int32 OS_rmfs (char *devname)
 {
     int               i;
     int32             ReturnCode;
-    rtems_status_code rtems_sc;
 
     if (devname == NULL)
     {
