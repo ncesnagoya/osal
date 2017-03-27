@@ -428,6 +428,7 @@ int32 OS_open   (const char *path,  int32 access,  uint32  mode)
             ret = OS_FS_ERROR;
         }
     }
+    return ret;
  
 } /* end OS_open */
 
