@@ -1346,7 +1346,7 @@ int32  OS_rmdir (const char *path)
         return OS_FS_ERR_PATH_INVALID;
     }
     
-    status = rmdir(local_path);
+    status = f_unlink(local_path);
     
     if (status == 0)
     {
