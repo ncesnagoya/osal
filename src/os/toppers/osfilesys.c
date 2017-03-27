@@ -454,7 +454,6 @@ int32 OS_initfs (char *address,char *devname, char *volname,
 int32 OS_mount (const char *devname, char* mountpoint)
 {
     int               i;
-    rtems_status_code rtems_sc;
 
     /* Check parameters */
     if ( devname == NULL || mountpoint == NULL )
@@ -470,7 +469,8 @@ int32 OS_mount (const char *devname, char* mountpoint)
     /*
     ** Lock 
     */
-    rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+    wai_sem(OSAL_VolumeTableSem);
 
     /* find the device in the table */
     for (i = 0; i < NUM_TABLE_ENTRIES; i++)
@@ -486,51 +486,20 @@ int32 OS_mount (const char *devname, char* mountpoint)
     /* Return an error if an un-mounted device was not found */
     if (i >= NUM_TABLE_ENTRIES)
     {
-       rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+       //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+       sig_sem(OSAL_VolumeTableSem);
        return OS_FS_ERROR;
     }
 
-    if (OS_VolumeTable[i].VolumeType == RAM_DISK)
-    {
-       /*
-       ** Mount the RFS Disk
-       ** Note: This code only works with RTEMS 4.10 and up. The mount API has changed with
-       **       RTEMS 4.10
-       */
-       if ( mount(OS_VolumeTable[i].PhysDevName, mountpoint, RTEMS_FILESYSTEM_TYPE_RFS, 0, NULL) != 0 )
-       {
-           #ifdef OS_DEBUG_PRINTF
-              printf("OSAL: Error: mount of %s to %s failed: %s\n",
-                          OS_VolumeTable[i].PhysDevName,
-                          mountpoint, strerror(errno));
-           #endif
-           rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-           return OS_FS_ERROR;
-       }
-
-       /* attach the mountpoint */
-       strcpy(OS_VolumeTable[i].MountPoint, mountpoint);
-       OS_VolumeTable[i].IsMounted = TRUE;
-   }
-   else if ( OS_VolumeTable[i].VolumeType == FS_BASED )
-   {
-       /* attach the mountpoint */
-       strcpy(OS_VolumeTable[i].MountPoint, mountpoint);
-       OS_VolumeTable[i].IsMounted = TRUE;
-   }
-   else
-   {
-       /* 
-       ** VolumeType is not supported right now 
-       */
-       rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-       return OS_FS_ERROR;
-   }
+    /* attach the mountpoint */
+    strcpy(OS_VolumeTable[i].MountPoint, mountpoint);
+    OS_VolumeTable[i].IsMounted = TRUE;
 
    /*
    ** Unlock
    */
-   rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+   //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+   sig_sem(OSAL_VolumeTableSem);
 
    return OS_FS_SUCCESS;
     
