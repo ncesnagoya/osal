@@ -957,34 +957,40 @@ int32 OS_cp (const char *src, const char *dest)
     ** Do the copy
     */
     index_fd = getEmptyFd();
-    if ( index_fd == OS_MAX_NUM_OPEN_FILES ) {
+    if ( index_fd == OS_MAX_NUM_OPEN_FILES )
+    {
         return OS_FS_ERR_NO_FREE_FDS;
-    } else {
-        if ( f_open(&Fat_FDTable[index_fd], src_path, FA_READ) == FR_OK ) {
+    } else
+    {
+        if ( f_open(&Fat_FDTable[index_fd], src_path, FA_READ) == FR_OK )
+        {
             OS_FDTable[index_fd].IsValid = TRUE;
             OS_FDTable[index_fd].OSfd    = index_fd;
             OS_FDTable[index_fd].User    = 0;
             strncpy(OS_FDTable[index_fd].Path, src_path, OS_MAX_PATH_LEN);
             src_fd = index_fd;
         } 
-    {
        return OS_FS_ERR_PATH_INVALID;
     }
 
     index_fd = getEmptyFd();
-    if ( index_fd == OS_MAX_NUM_OPEN_FILES ) {
+    if ( index_fd == OS_MAX_NUM_OPEN_FILES ) 
+    {
         return OS_FS_ERR_NO_FREE_FDS;
-    } else {
-        if ( f_open(&Fat_FDTable[index_fd], dest_path, FA_WRITE) == FR_OK) {
+    } else 
+    {
+        if ( f_open(&Fat_FDTable[index_fd], dest_path, FA_WRITE) == FR_OK) 
+        {
             OS_FDTable[index_fd].IsValid = TRUE;
             OS_FDTable[index_fd].OSfd    = index_fd;
             OS_FDTable[index_fd].User    = 0;
             strncpy(OS_FDTable[index_fd].Path, dest_path, OS_MAX_PATH_LEN);
             dest_fd = index_fd;
-        }
+        } else 
     {
        f_close(&Fat_FDTable[src_fd]);
        return OS_FS_ERR_PATH_INVALID;
+    }
     }
  
     while( f_read( &Fat_FDTable[src_fd], data_buffer, sizeof(data_buffer), &bytes_read) == FR_OK )
