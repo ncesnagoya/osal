@@ -300,7 +300,8 @@ int32 OS_rmfs (char *devname)
         /*
         ** Lock 
         */
-        rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+        //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+        wai_sem(OSAL_VolumeTableSem);
 
         /* find this entry in the Volume Table */
         for (i = 0; i < NUM_TABLE_ENTRIES; i++)
@@ -328,7 +329,8 @@ int32 OS_rmfs (char *devname)
         /*
         ** Unlock
         */
-        rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+        //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+        sig_sem(OSAL_VolumeTableSem);
     }
     return ReturnCode;
 
