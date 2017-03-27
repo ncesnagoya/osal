@@ -23,21 +23,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <sys/types.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-#include <dirent.h>
-#include <sys/statvfs.h>
+//#include <sys/types.h>
+//#include <fcntl.h>
+//#include <unistd.h>
+//#include <errno.h>
+//#include <dirent.h>
+//#include <sys/statvfs.h>
 
-#include <rtems.h>
-#include <rtems/blkdev.h> 
-#include <rtems/diskdevs.h>
-#include <rtems/error.h>
-#include <rtems/fsmount.h>
-#include <rtems/ramdisk.h>
-#include <rtems/rtems-rfs.h>
-#include <rtems/rtems-rfs-format.h>
+#include <kernel.h>
+#include "ff.h"
+#include "ffconf.h"
+#include "mem_diskio.h"
+#include "kernel_cfg.h"
 
 #include "common_types.h"
 #include "osapi.h"
@@ -71,23 +68,17 @@ extern OS_VolumeInfo_t OS_VolumeTable [NUM_TABLE_ENTRIES];
 extern OS_FDTableEntry OS_FDTable[OS_MAX_NUM_OPEN_FILES];
 
 /*
-** A semaphore to guard the RTEMS file system calls.
-** The RTEMS file system calls are not guarded as of RTEMS 4.10
+** FatFs FileSystem Table Entity
 */
-extern rtems_id        OS_VolumeTableSem;
+extern FATFS FatFs_entity[_VOLUMES];
 
 /*
-** These external references are for the RTEMS RAM disk device descriptor table
-** This is necessary for the RAM disk. These tables can either be here, or 
-** in a RTEMS kernel startup file. In this case, the tables are in the 
-** application startup
-**
-** Currently, it does not appear possible to create multiple arbitrary disks
-** The RAM disk driver appears to require these specific variables.
+** File Descriptor Table;
 */
-extern rtems_ramdisk_config                    rtems_ramdisk_configuration[];
-extern rtems_driver_address_table              rtems_ramdisk_io_ops;
-extern const rtems_filesystem_operations_table rtems_rfs_ops;
+extern FIL Fat_FDTable[OS_MAX_NUM_OPEN_FILES];
+
+BYTE Fatfswork[4096];  //dummy
+
 /****************************************************************************************
                                     Filesys API
 ****************************************************************************************/
@@ -99,6 +90,7 @@ extern const rtems_filesystem_operations_table rtems_rfs_ops;
 ** Create the RAM disk.
 ** This currently supports one RAM disk.
 */
+#if 0
 int32 rtems_setup_ramdisk (char *phys_dev_name, uint32 *address, uint32 block_size, uint32 num_blocks)
 {
   rtems_device_major_number major;
@@ -182,6 +174,8 @@ int32 rtems_setup_ramdisk (char *phys_dev_name, uint32 *address, uint32 block_si
 
   return(OS_FS_SUCCESS);
 }
+#endif
+
 /*---------------------------------------------------------------------------------------
     Name: OS_mkfs
 
