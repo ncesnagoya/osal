@@ -519,7 +519,6 @@ int32 OS_unmount (const char *mountpoint)
 {
    char              local_path [OS_MAX_LOCAL_PATH_LEN];
    int32             status;
-   rtems_status_code rtems_sc;
    int               i;
     
    if (mountpoint == NULL)
@@ -537,7 +536,8 @@ int32 OS_unmount (const char *mountpoint)
    /*
    ** Lock 
    */
-   rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+   //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+   wai_sem(OSAL_VolumeTableSem);
 
    for (i = 0; i < NUM_TABLE_ENTRIES; i++)
    {
@@ -553,50 +553,21 @@ int32 OS_unmount (const char *mountpoint)
           printf("OSAL: Error: unmount of %s failed: invalid volume table entry.\n",
                      local_path);
        #endif
-       rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+       //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+       sig_sem(OSAL_VolumeTableSem);
        return OS_FS_ERROR;
    }
-
-   if (OS_VolumeTable[i].VolumeType == RAM_DISK)
-   {
-      /*
-      ** Try to unmount the disk
-      */
-      if ( unmount(local_path) < 0) 
-      {
-         #ifdef OS_DEBUG_PRINTF
-            printf("OSAL: RTEMS unmount of %s failed :%s\n",local_path, strerror(errno));
-         #endif
-         rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-         return OS_FS_ERROR;
-      } 
-
-      /* release the information from the table */
-      OS_VolumeTable[i].IsMounted = FALSE;
-      strcpy(OS_VolumeTable[i].MountPoint, "");
-  
-   } 
-   else if ( OS_VolumeTable[i].VolumeType == FS_BASED )
-   {
 
       /* release the information from the table */
       OS_VolumeTable[i].IsMounted = FALSE;
       strcpy(OS_VolumeTable[i].MountPoint, "");
 
-   } 
-   else
-   {
-       /* 
-       ** VolumeType is not supported right now 
-       */
-       rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-       return OS_FS_ERROR;
-   }
 
    /*
    ** Unlock
    */
-   rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+   //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+   sig_sem(OSAL_VolumeTableSem);
    return OS_FS_SUCCESS;
     
 }/* end OS_umount */
