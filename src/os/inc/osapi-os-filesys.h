@@ -120,10 +120,26 @@
 
 #ifndef _osapi_filesys_
 #define _osapi_filesys_
+
+#if 1 /* For fatFs*/
+
+#include <ff.h>
+
+struct dirent {
+    uint32     d_ino;
+    uint16     d_reclen;
+    uint8      d_type;
+    uint8      d_name[16];
+};
+
+#else
+
 #include <stdio.h>
 #include <stdlib.h>
-//#include <dirent.h>
+#include <dirent.h>
 #include <sys/stat.h>
+
+#endif
 
 #define OS_READ_ONLY        0
 #define OS_WRITE_ONLY       1
@@ -234,7 +250,8 @@ typedef struct
 /* modified to posix calls, since all of the 
  * applicable OSes use the posix calls */
 
-typedef struct stat         os_fstat_t;
+//typedef struct stat         os_fstat_t;
+typedef int         os_fstat_t;
 typedef DIR*                os_dirp_t;
 typedef struct dirent       os_dirent_t;
 /* still don't know what this should be*/
