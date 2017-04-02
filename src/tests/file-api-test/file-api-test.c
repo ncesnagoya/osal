@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
+//#include <strings.h>
 #include <stdlib.h>
+#include "kernel_cfg.h"
+#include "syssvc/syslog.h"
+#include "t_stdlib.h"
 
 #include "common_types.h"
 #include "osapi.h"
@@ -41,16 +44,27 @@ void OS_Application_Startup(void)
      * otherwise the entire thing would be lumped together
      * as a single test case.
      */
-    UtTest_Add(TestMkfsMount, NULL, NULL, "TestMkfsMount");
-    UtTest_Add(TestCreatRemove, NULL, NULL, "TestCreatRemove");
-    UtTest_Add(TestOpenClose, NULL, NULL, "TestOpenClose");
-    UtTest_Add(TestReadWriteLseek, NULL, NULL, "TestReadWriteLseek");
-    UtTest_Add(TestMkRmDirFreeBytes, NULL, NULL, "TestMkRmDirFreeBytes");
-    UtTest_Add(TestOpenReadCloseDir, NULL, NULL, "TestOpenReadCloseDir");
-    UtTest_Add(TestStat, NULL, NULL, "TestStat");
-    UtTest_Add(TestOpenFileAPI, NULL, NULL, "TestOpenFileAPI");
-    UtTest_Add(TestUnmountRemount, NULL, NULL, "TestUnmountRemount");
-    UtTest_Add(TestRename, NULL, NULL, "TestRename");
+    //UtTest_Add(TestMkfsMount, NULL, NULL, "TestMkfsMount");
+    //UtTest_Add(TestCreatRemove, NULL, NULL, "TestCreatRemove");
+    //UtTest_Add(TestOpenClose, NULL, NULL, "TestOpenClose");
+    //UtTest_Add(TestReadWriteLseek, NULL, NULL, "TestReadWriteLseek");
+    //UtTest_Add(TestMkRmDirFreeBytes, NULL, NULL, "TestMkRmDirFreeBytes");
+    //UtTest_Add(TestOpenReadCloseDir, NULL, NULL, "TestOpenReadCloseDir");
+    //UtTest_Add(TestStat, NULL, NULL, "TestStat");
+    //UtTest_Add(TestOpenFileAPI, NULL, NULL, "TestOpenFileAPI");
+    //UtTest_Add(TestUnmountRemount, NULL, NULL, "TestUnmountRemount");
+    //UtTest_Add(TestRename, NULL, NULL, "TestRename");
+    TestMkfsMount();
+    TestCreatRemove();
+    TestOpenClose();
+    TestReadWriteLseek();
+    //TestMkRmDirFreeBytes();
+    //TestOpenReadCloseDir();
+    TestStat();
+    //TestOpenFileAPI();
+    //TestUnmountRemount();
+    //TestRename();
+    syslog(LOG_NOTICE, "OS_Application_Startup");
 }
 
 void TestMkfsMount(void)
@@ -58,7 +72,7 @@ void TestMkfsMount(void)
     int status;
 
     /* Make the file system */
-    status = OS_mkfs(0,"/ramdev0","RAM",512,200);
+    status = OS_mkfs(0,"/ramdev0","RAM",512,10);
     UtAssert_True(status == OS_SUCCESS, "status after mkfs = %d",(int)status);
 
     status = OS_mount("/ramdev0","/drive0");
@@ -265,6 +279,8 @@ void TestReadWriteLseek(void)
     UtAssert_True(status == OS_SUCCESS, "status after close = %d",(int)status);
 
     /*  open a file again, but only in READ mode */
+    strncpy(filename,"/drive0/Filename1", sizeof(filename) - 1);
+    filename[sizeof(filename) - 1] = 0;
     status = OS_open(filename,OS_READ_ONLY,0644);
     UtAssert_True(status >= OS_SUCCESS, "status after reopen = %d",(int)status);
 
