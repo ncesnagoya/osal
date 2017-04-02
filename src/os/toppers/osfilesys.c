@@ -35,6 +35,8 @@
 #include "ffconf.h"
 #include "mem_diskio.h"
 #include "kernel_cfg.h"
+#include "syssvc/syslog.h"
+#include "t_stdlib.h"
 
 #include "common_types.h"
 #include "osapi.h"
@@ -46,13 +48,10 @@
 /*
  * Let the IO system allocation the next available major number.
 */
-#define RTEMS_DRIVER_AUTO_MAJOR (0)
-
 #undef  OS_DEBUG_PRINTF
 /****************************************************************************************
                                    Prototypes
 ****************************************************************************************/
-int32 OS_check_name_length(const char *path);
 
 /****************************************************************************************
                                    GLOBAL DATA
@@ -67,17 +66,14 @@ extern OS_VolumeInfo_t OS_VolumeTable [NUM_TABLE_ENTRIES];
 */
 extern OS_FDTableEntry OS_FDTable[OS_MAX_NUM_OPEN_FILES];
 
-/*
-** FatFs FileSystem Table Entity
-*/
-extern FATFS FatFs_entity[_VOLUMES];
+/* for FatFs(mem_diskio.c) */
+extern BYTE RamDisk[0x100000];  //1MB
 
-/*
-** File Descriptor Table;
-*/
-extern FIL Fat_FDTable[OS_MAX_NUM_OPEN_FILES];
-
-BYTE Fatfswork[4096];  //dummy
+/*---------------------------------------------------------*/
+/* Work Area                                               */
+/*---------------------------------------------------------*/
+FATFS FatFs_entity[_VOLUMES];    /* File system object for logical drive */
+BYTE Buff[262144];      /* Working buffer */
 
 /****************************************************************************************
                                     Filesys API
@@ -85,96 +81,6 @@ BYTE Fatfswork[4096];  //dummy
 /*
 ** System Level API 
 */
-
-/*
-** Create the RAM disk.
-** This currently supports one RAM disk.
-*/
-#if 0
-int32 rtems_setup_ramdisk (char *phys_dev_name, uint32 *address, uint32 block_size, uint32 num_blocks)
-{
-  rtems_device_major_number major;
-  rtems_status_code         sc;
-  uint32                    local_address;
- 
-  /*
-  ** check parameters
-  */
-  if ( num_blocks == 0 )
-  {
-     #ifdef OS_DEBUG_PRINTF
-        printf("OSAL: Error: Cannot setup RAM disk, No size given.\n");
-     #endif
-     return(OS_FS_ERROR);
-  }
-  if ( block_size != 512 )
-  {
-     #ifdef OS_DEBUG_PRINTF
-        printf("OSAL: Error: RAM Disk currently needs a block size of 512.\n");
-     #endif
-     return(OS_FS_ERROR);
-  }
-  if ( address == 0 )
-  {
-       #ifdef OS_DEBUG_PRINTF
-          printf("OSAL: RAM disk address is zero: allocating %d bytes from heap\n",
-                  (int)(block_size * num_blocks));
-       #endif
-       local_address = (uint32) malloc (block_size * num_blocks);
-       if (!local_address)
-       {
-          #ifdef OS_DEBUG_PRINTF
-             printf ("OSAL: Error: no memory for RAM disk 0\n");
-          #endif
-          return(OS_FS_ERROR); 
-       }
-      
-       /*
-       ** Clear the memory for the disk 
-       */
-       memset ( (void *)local_address, 0, (block_size * num_blocks));
-
-       /*
-       ** Assign the address
-       */
-       rtems_ramdisk_configuration[0].location = (int *) local_address;
-  }
-  else
-  {
-       /*
-       ** Assign the address 
-       */
-       rtems_ramdisk_configuration[0].location = (int *) address;
-  } 
-
-  /*
-  ** Assign the size
-  */
-  rtems_ramdisk_configuration[0].block_size =  block_size;
-  rtems_ramdisk_configuration[0].block_num =  num_blocks;
-
-  /*
-  ** Register the RAM Disk driver.
-  */
-  sc = rtems_io_register_driver (RTEMS_DRIVER_AUTO_MAJOR,
-                                 &rtems_ramdisk_io_ops,
-                                 &major);
-  if (sc != RTEMS_SUCCESSFUL)
-  {
-    #ifdef OS_DEBUG_PRINTF
-       printf ("OSAL: Error: RAM driver not initialized: %s\n",
-               rtems_status_text (sc));
-    #endif
-    return (OS_FS_ERROR);
-  }
-  #ifdef OS_DEBUG_PRINTF
-     printf ("OSAL: RAM disk initialized: Address = 0x%08X\n",
-              (unsigned int)rtems_ramdisk_configuration[0].location);
-  #endif
-
-  return(OS_FS_SUCCESS);
-}
-#endif
 
 /*---------------------------------------------------------------------------------------
     Name: OS_mkfs
@@ -194,6 +100,8 @@ int32 OS_mkfs (char *address, char *devname,char * volname, uint32 blocksize,
     int                     i;
     int32                  ReturnCode;
 
+    FRESULT status;
+
     /*
     ** Check parameters
     */
@@ -211,7 +119,7 @@ int32 OS_mkfs (char *address, char *devname,char * volname, uint32 blocksize,
     ** Lock 
     */
     //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-    wai_sem(OSAL_VolumeTableSem);
+    //wai_sem(OSAL_VolumeTableSem);
 
     /* find an open entry in the Volume Table */
     for (i = 0; i < NUM_TABLE_ENTRIES; i++)
@@ -224,35 +132,27 @@ int32 OS_mkfs (char *address, char *devname,char * volname, uint32 blocksize,
     if (i >= NUM_TABLE_ENTRIES)
     {
         //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-        sig_sem(OSAL_VolumeTableSem);
+        //sig_sem(OSAL_VolumeTableSem);
         return OS_FS_ERR_DEVICE_NOT_FREE;
     }
 
     if (OS_VolumeTable[i].VolumeType == RAM_DISK)
     {
-      disk_setArea( i, (DWORD)address, numblocks, blocksize );
-      disk_initialize( i );
-      if ( f_mount( &FatFs_entity[i], "", 0 ) == FR_OK)
+      //disk_setArea( i, 0, numblocks, blocksize );
+
+      if( (status = f_mkfs( devname, FM_FAT|FM_SFD, 0, Buff, sizeof(Buff) )) == FR_OK )
       {
-          if(f_mkfs( "", FM_ANY, 0, Fatfswork, sizeof(Fatfswork) ) == FR_OK)
-          {
-           /* now enter the info in the table */
-           OS_VolumeTable[i].FreeFlag = FALSE;
-           strcpy(OS_VolumeTable[i].VolumeName, volname);
-           OS_VolumeTable[i].BlockSize = blocksize;
-
-           ReturnCode = OS_FS_SUCCESS;
-          }
-          else
-          {
-            disk_setArea( i, 0, 0, 0 );
-
-            ReturnCode = OS_FS_ERROR;
-          }
+        //syslog(LOG_EMERG, "[OS_mkfs] f_mkfs stat;%d  devname;%s", status,devname);
+        //syslog(LOG_EMERG, "[OS_mkfs] numblocks:%d blocksize:%d", numblocks,blocksize);
+        /* now enter the info in the table */
+        OS_VolumeTable[i].FreeFlag = FALSE;
+        strcpy(OS_VolumeTable[i].VolumeName, volname);
+        OS_VolumeTable[i].BlockSize = blocksize;
+        ReturnCode = OS_FS_SUCCESS;
       }
       else
       {
-        ReturnCode = OS_FS_ERROR;
+        ReturnCode = OS_FS_ERR_DRIVE_NOT_CREATED;
       }
     }
     else
@@ -267,8 +167,9 @@ int32 OS_mkfs (char *address, char *devname,char * volname, uint32 blocksize,
     ** Unlock
     */
     //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-    sig_sem(OSAL_VolumeTableSem);
+    //sig_sem(OSAL_VolumeTableSem);
 
+    //syslog(LOG_EMERG, "[OS_mkfs] ReturnCode %d",ReturnCode);
     return ReturnCode; 
        
 } /* end OS_mkfs */
@@ -301,7 +202,7 @@ int32 OS_rmfs (char *devname)
         ** Lock 
         */
         //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-        wai_sem(OSAL_VolumeTableSem);
+        //wai_sem(OSAL_VolumeTableSem);
 
         /* find this entry in the Volume Table */
         for (i = 0; i < NUM_TABLE_ENTRIES; i++)
@@ -330,7 +231,7 @@ int32 OS_rmfs (char *devname)
         ** Unlock
         */
         //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-        sig_sem(OSAL_VolumeTableSem);
+        //sig_sem(OSAL_VolumeTableSem);
     }
     return ReturnCode;
 
@@ -381,7 +282,8 @@ int32 OS_mount (const char *devname, char* mountpoint)
     ** Lock 
     */
     //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-    wai_sem(OSAL_VolumeTableSem);
+    //wai_sem(OSAL_VolumeTableSem);
+    //syslog(LOG_EMERG, "[OS_mount] devname:%s mountpoint:%s",devname, mountpoint);
 
     /* find the device in the table */
     for (i = 0; i < NUM_TABLE_ENTRIES; i++)
@@ -398,20 +300,37 @@ int32 OS_mount (const char *devname, char* mountpoint)
     if (i >= NUM_TABLE_ENTRIES)
     {
        //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-       sig_sem(OSAL_VolumeTableSem);
+       //sig_sem(OSAL_VolumeTableSem);
        return OS_FS_ERROR;
     }
 
-    /* attach the mountpoint */
-    strcpy(OS_VolumeTable[i].MountPoint, mountpoint);
-    OS_VolumeTable[i].IsMounted = TRUE;
+    if (OS_VolumeTable[i].VolumeType == RAM_DISK)
+    {
+      if( f_mount(&FatFs_entity[i], OS_VolumeTable[i].DeviceName, 1) != FR_OK)
+      {
+        return OS_FS_ERROR;
+      }
+
+      /* attach the mountpoint */
+      strcpy(OS_VolumeTable[i].MountPoint, mountpoint);
+      OS_VolumeTable[i].IsMounted = TRUE;
+    }
+   else
+   {
+       /* 
+       ** VolumeType is not supported right now 
+       */
+       //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
+       //sig_sem(OSAL_VolumeTableSem);
+       return OS_FS_ERROR;
+   }
 
    /*
    ** Unlock
    */
    //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-   sig_sem(OSAL_VolumeTableSem);
-
+   //sig_sem(OSAL_VolumeTableSem);
+ 
    return OS_FS_SUCCESS;
     
 }/* end OS_mount */
@@ -448,7 +367,7 @@ int32 OS_unmount (const char *mountpoint)
    ** Lock 
    */
    //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-   wai_sem(OSAL_VolumeTableSem);
+   //wai_sem(OSAL_VolumeTableSem);
 
    for (i = 0; i < NUM_TABLE_ENTRIES; i++)
    {
@@ -465,7 +384,7 @@ int32 OS_unmount (const char *mountpoint)
                      local_path);
        #endif
        //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-       sig_sem(OSAL_VolumeTableSem);
+       //sig_sem(OSAL_VolumeTableSem);
        return OS_FS_ERROR;
    }
 
@@ -478,7 +397,7 @@ int32 OS_unmount (const char *mountpoint)
    ** Unlock
    */
    //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-   sig_sem(OSAL_VolumeTableSem);
+   //sig_sem(OSAL_VolumeTableSem);
    return OS_FS_SUCCESS;
     
 }/* end OS_umount */
@@ -502,6 +421,8 @@ int32 OS_fsBlocksFree (const char *name)
    DWORD           cluster;
    FATFS           *fs;
    
+   return OS_FS_ERROR;
+
    if ( name == NULL )
    {
       return(OS_FS_ERR_INVALID_POINTER);
@@ -525,7 +446,7 @@ int32 OS_fsBlocksFree (const char *name)
    ** Lock 
    */
    //rtems_sc = rtems_semaphore_obtain (OS_VolumeTableSem, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
-   wai_sem(OSAL_VolumeTableSem);
+   //wai_sem(OSAL_VolumeTableSem);
 
    status = f_getfree( tmpFileName, &cluster, &fs );
    
@@ -533,7 +454,7 @@ int32 OS_fsBlocksFree (const char *name)
    ** Unlock
    */
    //rtems_sc = rtems_semaphore_release (OS_VolumeTableSem);
-   sig_sem(OSAL_VolumeTableSem);
+   //sig_sem(OSAL_VolumeTableSem);
 
    if ( status == FR_OK )
    {
@@ -699,7 +620,7 @@ int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
     char devname [OS_MAX_PATH_LEN];
     char filename[OS_MAX_PATH_LEN];
     int  NumChars;
-    //int  i=0;
+    int  i=0;
 
     /*
     ** Check to see if the path pointers are NULL
@@ -713,7 +634,7 @@ int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
     {
         return OS_FS_ERR_INVALID_POINTER;
     }
-
+   
     /*
     ** Check to see if the path is too long
     */
@@ -729,7 +650,7 @@ int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
     {
        return OS_FS_ERR_PATH_INVALID;
     }
- 
+
     /*
     ** Fill the file and device name to be sure they do not have garbage
     */
@@ -766,14 +687,51 @@ int32 OS_TranslatePath(const char *VirtualPath, char *LocalPath)
     ** Copy everything after the devname as the path/filename
     */
     strncpy(filename, &(VirtualPath[NumChars]), OS_MAX_PATH_LEN);
+    
+#ifdef OS_DEBUG_PRINTF 
+    printf("VirtualPath: %s, Length: %d\n",VirtualPath, (int)strlen(VirtualPath));
+    printf("NumChars: %d\n",NumChars);
+    printf("devname: %s\n",devname);
+    printf("filename: %s\n",filename);
+#endif
 
-    #ifdef OS_DEBUG_PRINTF
-       printf("VirtualPath: %s, Length: %d\n",VirtualPath, (int)strlen(VirtualPath));
-       printf("LocalPath: %s, Length: %d\n",LocalPath, (int)strlen(LocalPath));
-    #endif
+    /*
+    ** look for the dev name we found in the VolumeTable 
+    */
+    for (i = 0; i < NUM_TABLE_ENTRIES; i++)
+    {
+        if (OS_VolumeTable[i].FreeFlag == FALSE && 
+            strncmp(OS_VolumeTable[i].MountPoint, devname,NumChars) == 0)
+        {
+            break;
+        }
+    }
+
+    /* 
+    ** Make sure we found a valid drive 
+    */
+    if (i >= NUM_TABLE_ENTRIES)
+    {
+        return OS_FS_ERR_PATH_INVALID;
+    }
+    
+    /* 
+    ** copy over the physical first part of the drive 
+    */
+    strncpy(LocalPath,OS_VolumeTable[i].PhysDevName,OS_MAX_LOCAL_PATH_LEN);
+    NumChars = strlen(LocalPath);
+
+    /*
+    ** Add the file name
+    */
+    strncat(LocalPath, filename, (OS_MAX_LOCAL_PATH_LEN - NumChars));
+
+#ifdef OS_DEBUG_PRINTF
+    printf("Result of TranslatePath = %s\n",LocalPath);
+#endif
 
     return OS_FS_SUCCESS;
-
+    
 } /* end OS_TranslatePath */
 
 /*---------------------------------------------------------------------------------------

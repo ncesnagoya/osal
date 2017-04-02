@@ -111,9 +111,14 @@
 #include "ff.h"
 #include "ffconf.h"
 #include "kernel_cfg.h"
+#include "syssvc/syslog.h"
+#include "t_stdlib.h"
 
 #include "common_types.h"
 #include "osapi.h"
+#include "utassert.h"
+#include "uttest.h"
+#include "utbsp.h"
 
 /****************************************************************************************
                                      DEFINES
@@ -150,17 +155,20 @@ int32 checkOpenFile( const char *path, unsigned char mode );
 /* 
 ** This is the volume table reference. It is defined in the BSP/startup code for the board
 */
-extern OS_VolumeInfo_t OS_VolumeTable [NUM_TABLE_ENTRIES]; 
+OS_VolumeInfo_t OS_VolumeTable [NUM_TABLE_ENTRIES]; 
 
 /*
 ** Fd Table
 */
-extern OS_FDTableEntry OS_FDTable[OS_MAX_NUM_OPEN_FILES];
+OS_FDTableEntry OS_FDTable[OS_MAX_NUM_OPEN_FILES];
+
+/* for FatFS(mem_diskio.c) */
+extern BYTE RamDisk[0x100000];  //1MB
 
 /*
-** FatFs FileSystem Table Entity
+** FatFs FileSystem Table Entity(osfilesys.c)
 */
-FATFS FatFs_entity[_VOLUMES];
+extern FATFS FatFs_entity[_VOLUMES];
 
 /*
 ** File Descriptor Table;
@@ -197,31 +205,16 @@ int32 OS_FS_Init(void)
     memset( &FatFs_entity, 0, sizeof( FatFs_entity ) );
     memset( &Fat_FDTable, 0, sizeof( Fat_FDTable ) );
     memset( &saOpenDir, 0, sizeof( saOpenDir ) );
+    memset( RamDisk, 0, sizeof(RamDisk) );
 
-#if 0
-These semaphore prepare with static API objects
-   /*
-   ** Initialize the FS subsystem semaphore
-   */
-   rtems_sc = rtems_semaphore_create (rtems_build_name ('M', 'U', 'T', 'F'),
-                                      1, OSAL_TABLE_MUTEX_ATTRIBS, 0,
-                                      &OS_FDTableSem);
-   if ( rtems_sc != RTEMS_SUCCESSFUL )
-   {
-      return(OS_ERROR);
-   }
-
-   /*
-   ** Initialize the RTEMS system call lock semaphore 
-   */
-   rtems_sc = rtems_semaphore_create (rtems_build_name ('V', 'O', 'L', 'T'),
-                                      1, OSAL_TABLE_MUTEX_ATTRIBS, 0,
-                                      &OS_VolumeTableSem);
-   if ( rtems_sc != RTEMS_SUCCESSFUL )
-   {
-      return(OS_ERROR);
-   }
-#endif
+    /* for TEST RAM Disk  */
+    for ( i=0; i < NUM_TABLE_ENTRIES; i++ )
+    {
+        OS_VolumeTable[i].FreeFlag = TRUE;
+        OS_VolumeTable[i].IsMounted = FALSE;
+        strncpy(OS_VolumeTable[i].DeviceName,  "/ramdev0" , sizeof("/ramdev0"));
+        OS_VolumeTable[i].VolumeType = RAM_DISK;
+    }
 
    return(OS_SUCCESS);
 
@@ -300,7 +293,7 @@ int32 OS_creat  (const char *path, int32 access)
             mode = FA_WRITE | FA_OPEN_ALWAYS;
             break;
         case OS_READ_WRITE:
-            mode = FA_READ | FA_WRITE | FA_OPEN_ALWAYS;
+            mode = FA_READ | FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_NEW;
             break;
         default:
             return OS_FS_ERROR;
@@ -330,6 +323,7 @@ int32 OS_creat  (const char *path, int32 access)
             ret = OS_FS_ERROR;
         }
     }
+    return ret;
 
 } /* end OS_creat */
 
@@ -412,10 +406,11 @@ int32 OS_open   (const char *path,  int32 access,  uint32  mode)
     }
 
     index_fd = getEmptyFd();
-    if ( index_fd == OS_MAX_NUM_OPEN_FILES ) {
+    if ( index_fd >= OS_MAX_NUM_OPEN_FILES ) {
         ret = OS_FS_ERR_NO_FREE_FDS;
     } else {
         ret = f_open( &Fat_FDTable[index_fd], local_path, perm );
+        //syslog(LOG_EMERG, "[OS_open] f_open ret(%d) Fat_FDTable[%d] local_path:%s",ret,index_fd,local_path);
         if ( ret == FR_OK ) {
             /* fill in the table before returning */
             OS_FDTable[index_fd].IsValid = TRUE;
@@ -462,24 +457,24 @@ int32 OS_close (int32  filedes)
             ** to free up that slot 
             */
             /* fill in the table before returning */
-            wai_sem(OSAL_FDTableSem);
+            //wai_sem(OSAL_FDTableSem);
             OS_FDTable[filedes].OSfd =       -1;
             strcpy(OS_FDTable[filedes].Path, "\0");
             OS_FDTable[filedes].User =       0;
             OS_FDTable[filedes].IsValid =    FALSE;
-            sig_sem(OSAL_FDTableSem);
+            //sig_sem(OSAL_FDTableSem);
 
             return OS_FS_ERROR;
         }
         else
         {
             /* fill in the table before returning */
-            wai_sem(OSAL_FDTableSem);
+            //wai_sem(OSAL_FDTableSem);
             OS_FDTable[filedes].OSfd =       -1;
             strcpy(OS_FDTable[filedes].Path, "\0");
             OS_FDTable[filedes].User =       0;
             OS_FDTable[filedes].IsValid =    FALSE;
-            sig_sem(OSAL_FDTableSem);
+            //sig_sem(OSAL_FDTableSem);
             
             return OS_FS_SUCCESS;
         }
