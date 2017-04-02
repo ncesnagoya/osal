@@ -291,7 +291,7 @@ KERNEL_DOMAIN {
    /*
    ** File system init
    */
-   //return_code = OS_FS_Init();
+   return_code = OS_FS_Init();
 
    
    return(return_code);
