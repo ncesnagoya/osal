@@ -131,7 +131,7 @@
 #include "osapi-os-core.h"
 #include "osapi-os-filesys.h"
 //#include "osapi-os-net.h"
-//#include "osapi-os-loader.h"
+#include "osapi-os-loader.h"
 #include "osapi-os-timer.h"
 
 /*
