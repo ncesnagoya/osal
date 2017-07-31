@@ -20,7 +20,7 @@ SYSINCS=
 ##
 ## Target Defines for the OS, Hardware Arch, etc..
 ##
-TARGET_DEFS=-D__ix86__ -D_ix86_ -D_LINUX_OS_ -D$(OS) -DX86PC -DBUILD=$(BUILD) -D_REENTRANT -D _EMBED_  -D_XOPEN_SOURCE=600
+TARGET_DEFS=-D__ix86__ -D_ix86_ -D_LINUX_OS_ -D$(OS) -DX86PC -DBUILD=$(BUILD) -D_REENTRANT -D _EMBED_  -D_XOPEN_SOURCE=600 -D_HAVE_STDINT_
 
 ## 
 ## Endian Defines
