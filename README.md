@@ -49,7 +49,14 @@ In build/osal-config.mak:
     adding the appropriate flag causes your builds to fail due to (for example) missing 32-bit or 
     multilib related headers or libraries.) 
 
-Now just type *make* from the build directory and it should build the OSAL core files, tests, and sample 
+Optional:  Some Linux systems may require an additional linker option in
+    src/bsp/pc-linux/make/link-rules.mak:
+
+    LDFLAGS ?= $(OSAL_M32) -export-dynamic
+
+    If the symbol-api-test fails, then you need this option.
+
+Now just type *make config; make* from the build directory and it should build the OSAL core files, tests, and sample
 applications for you. The binary for each application is in its own directory 
 (i.e. build/examples/tasking-example/tasking-example.bin) You can switch to that directory and run it. You 
 can also debug it using GDB.
@@ -63,6 +70,9 @@ If you would like just the OSAL itself, just look in src/os/inc for the include 
 for the OSAL implementation. 
 
 The API documentation is in the *doc* directory.
+
+There are two sets of tests: build/tests and build/unit-tests.  To build and the unit tests,
+perform the build steps above then *make unit-tests* in the build directory.
 
 Instructions on how to use the newely supported cmake build system are provided in the OSAL Configuration Guide
 located in the *doc* directory.
